@@ -1,3 +1,4 @@
+import { ViewTransition } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { Estudos, Hero, Processo, Sobre } from "@/components/home";
 import { HeliceSolucoes } from "@/components/helice";
@@ -8,14 +9,23 @@ export default function Home() {
   return (
     <>
       <SiteHeader />
-      <main>
-        <Hero />
-        <HeliceSolucoes />
-        <Estudos />
-        <Processo />
-        <Sobre />
-      </main>
-      <Contato />
+      {/* Ao abrir um projeto a home some rápido; ao voltar, reaparece. */}
+      <ViewTransition
+        exit={{ "abrir-projeto": "home-sai", default: "none" }}
+        enter={{ "voltar-projeto": "home-entra", default: "none" }}
+        default="none"
+      >
+        <div>
+          <main>
+            <Hero />
+            <HeliceSolucoes />
+            <Estudos />
+            <Processo />
+            <Sobre />
+          </main>
+          <Contato />
+        </div>
+      </ViewTransition>
       <CommandPalette />
     </>
   );

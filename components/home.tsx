@@ -1,9 +1,11 @@
 "use client";
 
+import { useRef } from "react";
 import { ArrowDown, ArrowUpRight, Check, Copy, Mail } from "lucide-react";
 import { estudos, perfil, processo, solucoes, stack, trajetoria } from "@/content/perfil";
 import { Label, Lines, Reveal } from "@/components/ui";
 import { GithubMarca, LinkedinMarca } from "@/components/marcas";
+import { CampoTokens } from "@/components/campo-tokens";
 import { useCopiar } from "@/lib/hooks";
 
 const wrap = "mx-auto max-w-[1400px] px-5 md:px-10";
@@ -120,9 +122,13 @@ export function Estudos() {
 }
 
 export function Processo() {
+  const secao = useRef<HTMLElement>(null);
+  const lista = useRef<HTMLOListElement>(null);
   return (
-    <section id="processo" className="scroll-mt-16 bg-ink text-paper">
-      <div className={`${wrap} grid gap-14 py-24 md:grid-cols-12 md:py-36`}>
+    <section ref={secao} id="processo" className="relative isolate scroll-mt-16 bg-ink text-paper">
+      {/* Campo de tokens atrás do conteúdo; o passo perto do cursor ganha [data-foco]. */}
+      <CampoTokens area={secao} alvos={lista} />
+      <div className={`${wrap} relative grid gap-14 py-24 md:grid-cols-12 md:py-36`}>
         <div className="self-start md:sticky md:top-28 md:col-span-5">
           <Label className="text-paper/50">Processo</Label>
           <h2 className="mt-6 font-serif text-[clamp(2.75rem,6vw,5.5rem)] leading-[0.9]">
@@ -135,15 +141,21 @@ export function Processo() {
             </p>
           </Reveal>
         </div>
-        <ol className="md:col-span-6 md:col-start-7">
+        {/* Com um passo em foco, os outros esmaecem. */}
+        <ol ref={lista} className="md:col-span-6 md:col-start-7 [&:has([data-foco])_[data-alvo]:not([data-foco])]:opacity-40">
           {processo.map((p, i) => (
             <Reveal key={p.titulo} delay={i * 0.04}>
-              <li className="grid grid-cols-[3rem_1fr] gap-x-4 border-t border-paper/15 py-9">
+              <li
+                data-alvo
+                className="group/passo grid grid-cols-[3rem_1fr] gap-x-4 border-t border-paper/15 py-9 transition-[opacity,border-color] duration-300 data-[foco]:border-[#e0764f]/70"
+              >
                 <span className="font-mono text-xs text-[#e0764f]">{String(i + 1).padStart(2, "0")}</span>
                 <div>
-                  <h3 className="text-2xl tracking-tight md:text-3xl">{p.titulo}</h3>
+                  <h3 className="text-2xl tracking-tight transition-transform duration-300 group-data-[foco]/passo:translate-x-1.5 md:text-3xl">{p.titulo}</h3>
                   <p className="mt-3 leading-relaxed text-paper/70">{p.texto}</p>
-                  <p className="mt-5 font-mono text-[11px] leading-relaxed tracking-wide text-paper/45 uppercase">↳ {p.evidencia}</p>
+                  <p className="mt-5 font-mono text-[11px] leading-relaxed tracking-wide text-paper/45 uppercase transition-colors duration-300 group-data-[foco]/passo:text-paper/75">
+                    ↳ {p.evidencia}
+                  </p>
                 </div>
               </li>
             </Reveal>

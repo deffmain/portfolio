@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Portfolio — Micael Martins
 
-## Getting Started
+"Construo software que resolve problemas reais." Um portfolio editorial (papel & tinta) organizado em torno de soluções: cada uma tem um estudo de caso com problema → o que construí → como construí → resultado. A IA aparece como método de engenharia, na seção **Processo** e nos selos "IA no processo" de cada caso.
 
-First, run the development server:
+## Estrutura do site
+
+- **/** — hero, índice de soluções (prévia que segue o cursor), processo, sobre, contato
+- **/solucoes/[slug]** — estudo de caso, gerado estaticamente; o título faz *morph* a partir do índice com `<ViewTransition>`
+- **/solucoes/viaja-mais#experimente** — protótipo ao vivo do gerador de roteiros com IA
+- **⌘K / Ctrl+K** — índice de navegação; frases livres são interpretadas por IA (ou por um roteador local, sem chave)
+
+## Rodando localmente
 
 ```bash
+npm install
+cp .env.example .env.local   # opcional: GROQ_API_KEY e/ou GEMINI_API_KEY (gratuitos)
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Sem chave, o gerador de roteiros mostra um exemplo pré-gerado e a paleta usa o roteador local.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Variável | Padrão |
+|---|---|
+| `GROQ_API_KEY` | — |
+| `GROQ_MODEL` | `openai/gpt-oss-120b` |
+| `GEMINI_API_KEY` | — |
+| `GEMINI_MODEL` | `gemini-3.5-flash-lite` |
+| `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Editando o conteúdo
 
-## Learn More
+Tudo está em [`content/perfil.ts`](content/perfil.ts): perfil, soluções (com problema, solução, processo, resultado e números), estudos, processo e trajetória. Para exibir o LinkedIn, preencha `perfil.linkedin`.
 
-To learn more about Next.js, take a look at the following resources:
+As ilustrações das soluções ficam em [`components/visuais.tsx`](components/visuais.tsx) — são esquemáticas e podem ser trocadas por capturas de tela reais.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Código
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+app/page.tsx                 home
+app/solucoes/[slug]/page.tsx estudo de caso
+app/api/roteiro              gerador de roteiros — streaming NDJSON, cada item validado com Zod
+app/api/comando              paleta: a IA escolhe uma ação de um catálogo fechado
+lib/ai/                      provedores (Groq → Gemini), parser SSE, JSON Lines + Zod, rate limit
+components/                  home, cabeçalho, contato, visuais, paleta, demo
+content/perfil.ts            conteúdo
+```
 
-## Deploy on Vercel
+## Deploy (Vercel)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Suba o repositório no GitHub e importe em [vercel.com/new](https://vercel.com/new).
+2. Opcional: em *Settings → Environment Variables*, adicione `GROQ_API_KEY` e `NEXT_PUBLIC_SITE_URL`.
+3. Deploy.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Stack: Next.js 16 · React 19 · TypeScript · Tailwind CSS v4 · Motion · cmdk · Zod.

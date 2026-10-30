@@ -1,3 +1,4 @@
+import path from "node:path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -5,6 +6,8 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {
+    // Há um package-lock.json na pasta do usuário; fixa a raiz neste projeto.
+    root: path.resolve("."),
     rules: {
       "*.css": {
         loaders: ["@tailwindcss/turbopack"],

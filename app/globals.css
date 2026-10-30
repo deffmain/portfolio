@@ -1,26 +1,210 @@
 @import "tailwindcss";
 
+/* Papel & tinta: duas cores de alto contraste e um único acento. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --paper: #f2efe8;
+  --paper-2: #e8e4da;
+  --ink: #141413;
+  --ink-soft: #46443f;
+  --muted: #77746c;
+  --line: rgb(20 20 19 / 0.14);
+  --line-strong: rgb(20 20 19 / 0.32);
+  --rust: #b4441f;
+  --rust-soft: rgb(180 68 31 / 0.1);
+  color-scheme: light;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-rust: var(--rust);
+  --color-rust-soft: var(--rust-soft);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-instrument-serif);
+  --animate-marquee: marquee 40s linear infinite;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .animate-marquee {
+    animation: none;
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+::selection {
+  background: var(--rust);
+  color: var(--paper);
+}
+
+/* Textura de papel por cima de tudo. */
+.grain::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 100;
+  opacity: 0.07;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Sublinhado editorial que cresce no hover. */
+.link-line {
+  background: linear-gradient(currentColor, currentColor) no-repeat 0 100% / 0% 1px;
+  transition: background-size 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.link-line:hover,
+.link-line:focus-visible {
+  background-size: 100% 1px;
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Transições home ⇄ estudo de caso (React <ViewTransition>).
+   Foco (na home, em JS) → voo: o card vira a capa e o título do painel vira o
+   h1 (classe .morph) → chegada: o resto da página sobe em cascata (.chegada). */
+::view-transition {
+  pointer-events: none;
+}
+
+::view-transition-group(site-header) {
+  animation: none;
+  z-index: 100;
+}
+::view-transition-old(site-header) {
+  display: none;
+}
+::view-transition-new(site-header) {
+  animation: none;
+}
+
+::view-transition-group(.morph) {
+  animation-duration: 560ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 50;
+}
+/* Blur leve no meio do voo. */
+::view-transition-image-pair(.morph) {
+  animation-name: voo-desfoque;
+}
+@keyframes voo-desfoque {
+  45% {
+    filter: blur(2.5px);
+  }
+}
+
+::view-transition-old(.home-sai),
+::view-transition-old(.caso-sai) {
+  animation: 150ms ease-out both vt-sai;
+}
+/* Sem atraso: a página nova aparece enquanto a antiga some (crossfade), para
+   nunca sobrar só a capa voando sobre o fundo vazio. A cascata .chegada da
+   página do projeto tem seus próprios atrasos. */
+::view-transition-new(.caso-entra),
+::view-transition-new(.home-entra) {
+  animation: 300ms ease-out both vt-entra;
+}
+@keyframes vt-sai {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes vt-entra {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Chegada: sobe 20px com fade, em cascata, depois que a capa pousa. */
+@keyframes chegada {
+  from {
+    opacity: 0;
+    translate: 0 20px;
+  }
+}
+.chegada {
+  animation: chegada 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(480ms + var(--d, 0) * 90ms);
+}
+
+/* Movimento reduzido: sem voo, só um crossfade rápido. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+  }
+  ::view-transition-image-pair(*) {
+    animation: none !important;
+  }
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 150ms !important;
+    animation-delay: 0s !important;
+  }
+  .chegada {
+    animation: none;
+  }
+}
+
+/* Paleta de comandos (cmdk) */
+[cmdk-overlay] {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgb(20 20 19 / 0.35);
+  backdrop-filter: blur(4px);
+}
+
+[cmdk-dialog] {
+  position: fixed;
+  z-index: 90;
+  top: 12vh;
+  left: 50%;
+  translate: -50% 0;
+  width: min(620px, calc(100vw - 2rem));
+}
+
+[cmdk-item] {
+  cursor: pointer;
+}
+
+[cmdk-item][data-selected="true"] {
+  background: var(--paper-2);
+}
+
+[cmdk-group-heading] {
+  padding: 0.75rem 0.75rem 0.375rem;
+  font-family: var(--font-geist-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
 }

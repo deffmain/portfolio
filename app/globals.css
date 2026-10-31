@@ -107,9 +107,10 @@ body {
   animation: none;
 }
 
+/* Sai devagar e pousa macio (ease-in-out suave). */
 ::view-transition-group(.morph) {
-  animation-duration: 560ms;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-duration: 540ms;
+  animation-timing-function: cubic-bezier(0.45, 0, 0.2, 1);
   z-index: 50;
 }
 /* Blur leve no meio do voo. */
@@ -144,7 +145,8 @@ body {
   }
 }
 
-/* Chegada: sobe 20px com fade, em cascata, depois que a capa pousa. */
+/* Chegada: sobe 20px com fade, em cascata; começa enquanto a capa termina de
+   pousar (o morph dura 540 ms). */
 @keyframes chegada {
   from {
     opacity: 0;
@@ -153,7 +155,7 @@ body {
 }
 .chegada {
   animation: chegada 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: calc(480ms + var(--d, 0) * 90ms);
+  animation-delay: calc(300ms + var(--d, 0) * 70ms);
 }
 
 /* Movimento reduzido: sem voo, só um crossfade rápido. */

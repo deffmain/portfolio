@@ -66,9 +66,11 @@ const INCLINACAO = -7; // graus: os cards de trás aparecem um pouco acima
 // Palco escuro (tom "Terra"): os cards de trás escurecem até a cor do fundo.
 const FUNDO = "#1f1915";
 const LUZ_PALCO = "rgb(224 118 79 / 0.09)";
-const FOCO_MS = 350;
+const FOCO_MS = 280;
+const RECUO_MS = 200; // cada card que não foi clicado recua e some nesse tempo…
+const RECUO_PASSO_MS = 40; // …começando pelos vizinhos, um passo depois do outro
 const ENTRADA_MS = 3300; // quando o último card termina de montar
-const PAUSA_VOLTA_MS = 900; // o voo da volta dura 560 ms; o card não pode andar antes de a capa pousar
+const PAUSA_VOLTA_MS = 900; // o voo da volta dura 540 ms; o card não pode andar antes de a capa pousar
 
 // Texto do projeto da frente (as cópias que reservam a altura usam as mesmas classes).
 const CL_NOME = "mt-2 font-serif text-[clamp(2rem,4vw,3rem)] leading-none";
@@ -294,7 +296,7 @@ export function HeliceSolucoes() {
 
         // Foco: os outros recuam e somem, a partir dos vizinhos.
         if (s.foco && s.foco.t0 >= 0 && i !== s.foco.card) {
-          const p = clamp((agora - s.foco.t0 - (distancia(i, s.foco.card) - 1) * 40) / 150, 0, 1);
+          const p = suave(clamp((agora - s.foco.t0 - (distancia(i, s.foco.card) - 1) * RECUO_PASSO_MS) / RECUO_MS, 0, 1));
           z -= 200 * p;
           opacidade *= 1 - p;
         }
@@ -377,11 +379,6 @@ export function HeliceSolucoes() {
     ro.observe(el);
     return () => ro.disconnect();
   }, [medir, posicionar]);
-
-  // O morph só acontece com a página de destino em cache.
-  useEffect(() => {
-    router.prefetch(`/solucoes/${solucoes[ativo].slug}`);
-  }, [ativo, router]);
 
   // Laço de animação: só roda com o palco na tela. Com movimento reduzido e o
   // anel parado ele dorme, e `acordar` o religa na próxima interação.
@@ -628,7 +625,9 @@ export function HeliceSolucoes() {
                 }}
                 href={`/solucoes/${s.slug}`}
                 draggable={false}
-                prefetch={false}
+                // Conteúdo completo do projeto antes do clique (a página é
+                // estática): o morph não espera a rede.
+                prefetch={true}
                 aria-label={`${s.nome} — abrir estudo de caso`}
                 onClick={(e) => onCardClick(e, i)}
                 onFocus={(e) => onCardFocus(e, i)}
@@ -732,7 +731,7 @@ export function HeliceSolucoes() {
             <p className={`${CL_DESCRICAO} text-[#d4bea3]`}>{sol.problemaCurto}</p>
             <Link
               href={`/solucoes/${sol.slug}`}
-              prefetch={false}
+              prefetch={true}
               onClick={(e) => {
                 if (novaAba(e)) return;
                 e.preventDefault();

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ViewTransition } from "react";
+import { Suspense, ViewTransition } from "react";
 import { ArrowLeft, ArrowUpRight, Lock } from "lucide-react";
 import { perfil, solucoes } from "@/content/perfil";
 import { SiteHeader } from "@/components/site-header";
@@ -32,8 +32,24 @@ const wrap = "mx-auto max-w-[1400px] px-5 md:px-10";
 /** Ordem na cascata de chegada (classe .chegada em globals.css). */
 const atraso = (d: number) => ({ "--d": d }) as React.CSSProperties;
 
-export default async function SolucaoPage({ params }: PageProps<"/solucoes/[slug]">) {
-  // REVISAO[ADV-20261030-2152-01] baixa — await params fora de <Suspense> com partialPrefetching gera o erro "URL data during prerendering" no dev (pré-existente, não vem deste diff) → .claude/revisoes/2026-10-30-2152-adversarial.md
+// O App Shell da rota (compartilhado entre os slugs) leva só o cabeçalho; o
+// conteúdo depende de params e fica dentro do <Suspense>. Como as cinco páginas
+// são geradas no build, o <Link prefetch> do carrossel traz esse conteúdo
+// pronto do cache estático, e o clique não espera a rede.
+export default function SolucaoPage({ params }: PageProps<"/solucoes/[slug]">) {
+  return (
+    <>
+      <RolarParaTopo />
+      <SiteHeader />
+      <Suspense>
+        <Caso params={params} />
+      </Suspense>
+      <CommandPalette />
+    </>
+  );
+}
+
+async function Caso({ params }: Pick<PageProps<"/solucoes/[slug]">, "params">) {
   const { slug } = await params;
   const idx = solucoes.findIndex((s) => s.slug === slug);
   if (idx === -1) notFound();
@@ -42,8 +58,6 @@ export default async function SolucaoPage({ params }: PageProps<"/solucoes/[slug
 
   return (
     <>
-      <RolarParaTopo />
-      <SiteHeader />
       {/* Entrada/saída da página nas transições home ⇄ estudo de caso */}
       <ViewTransition
         enter={{ "abrir-projeto": "caso-entra", default: "none" }}
@@ -201,7 +215,6 @@ export default async function SolucaoPage({ params }: PageProps<"/solucoes/[slug
       <Contato />
         </div>
       </ViewTransition>
-      <CommandPalette />
     </>
   );
 }

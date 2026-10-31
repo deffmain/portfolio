@@ -51,7 +51,8 @@ qualquer sessão ou conta do Claude que trabalhar aqui. Complementa o
    2. rodar os revisores?
 
    Só rode os revisores com um "sim" explícito. Se a página é de teste e
-   descartável, recomende "não".
+   descartável, recomende "não". O hook só considera os arquivos que a própria
+   sessão editou; o que outra sessão alterou não entra nas perguntas.
 6. **Sessões paralelas.** Ele costuma ter outra sessão do Claude no mesmo
    repositório.
    - Antes de editar arquivos compartilhados (`components/helice.tsx`,
@@ -61,6 +62,9 @@ qualquer sessão ou conta do Claude que trabalhar aqui. Complementa o
    - Se outra sessão estiver mexendo nele, use arquivos novos ou entregue um
      prompt.
    - Antes de commitar, rode `npm run build`.
+   - Nunca rode `npm run build` nem `next start` na pasta do projeto com um
+     `next dev` ligado (porta 3000+). Ele derruba o worker de rotas do dev.
+     Faça o build numa cópia ou pergunte antes.
 7. **Este não é o Next.js que você conhece** (16.4, com mudanças
    incompatíveis). Antes de afirmar algo sobre uma API, consulte
    `node_modules/next/dist/docs/`.
@@ -107,6 +111,11 @@ qualquer sessão ou conta do Claude que trabalhar aqui. Complementa o
     `#d4bea3`, link `#e9a77f`;
   - atenção ao ângulo: o card i está em `ângulo − i·passo`. Com o sinal
     trocado, o destaque cai no card errado.
+  - **sem `filter` no voo do morph:** um `blur(2.5px)` na capa e no título
+    derrubava a ida para ~30 fps (GPU). Sem ele, ~110 fps. As seções da home
+    usam `.adiar-render` (`content-visibility` só durante a transição; ligado
+    sempre, as âncoras do menu erram no celular). Meça fluidez no build de
+    produção: o `next dev` deixa a transição ~2× mais lenta.
 - **Seção "IA no processo":** campo de tokens interativo
   (`components/campo-tokens.tsx`). Perto de um passo, o campo se acalma e o
   passo ganha destaque.
@@ -146,5 +155,5 @@ qualquer sessão ou conta do Claude que trabalhar aqui. Complementa o
   `components/visuais.tsx` e `app/solucoes/[slug]/page.tsx`
   (`git grep -n "REVISAO\["`).
 - **Servidor de desenvolvimento:** se não houver nenhum rodando, suba com
-  `npx next dev -p 3000`. O `next build` pode rodar ao mesmo tempo, porque o
-  dev usa `.next/dev`.
+  `npx next dev -p 3000`. O `next build` **não** pode rodar na mesma pasta
+  com o dev ligado (veja a regra 6).

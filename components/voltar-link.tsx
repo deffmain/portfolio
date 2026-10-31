@@ -15,7 +15,10 @@ export function VoltarLink({ slug, className, children }: { slug: string; classN
       href="/"
       scroll={false}
       transitionTypes={["voltar-projeto"]}
-      onClick={() => {
+      onClick={(e) => {
+        // Com tecla modificadora ou outro botão a home abre em outra aba: a
+        // chave sobraria nesta e faria a próxima visita à home pular para o anel.
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
         try {
           sessionStorage.setItem(VOLTA_PROJETO, slug);
         } catch {}

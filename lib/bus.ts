@@ -31,3 +31,23 @@ export const ROTEIRO_PENDENTE = "portfolio:roteiro-pendente";
 // o anel já formado, com ele na frente, para a capa encolher de volta ao card.
 export const VOLTA_PROJETO = "portfolio:volta-projeto";
 
+
+// Cabeçalho recolhido enquanto o palco de soluções ocupa o topo da tela. Um
+// estado só de exibição, lido pelo cabeçalho com useSyncExternalStore.
+let recolhido = false;
+const ouvintesCabecalho = new Set<() => void>();
+
+export function recolherCabecalho(valor: boolean) {
+  if (valor === recolhido) return;
+  recolhido = valor;
+  ouvintesCabecalho.forEach((fn) => fn());
+}
+
+export const cabecalhoRecolhido = {
+  assinar(fn: () => void) {
+    ouvintesCabecalho.add(fn);
+    return () => ouvintesCabecalho.delete(fn);
+  },
+  ler: () => recolhido,
+  lerNoServidor: () => false,
+};

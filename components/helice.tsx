@@ -72,6 +72,11 @@ const RECUO_MS = 200; // cada card que não foi clicado recua e some nesse tempo
 const RECUO_PASSO_MS = 40; // …começando pelos vizinhos, um passo depois do outro
 const ENTRADA_MS = 3300; // quando o último card termina de montar
 const PAUSA_VOLTA_MS = 900; // o voo da volta dura 540 ms; o card não pode andar antes de a capa pousar
+// Fração do ângulo do anel que o card gira em torno de si. Com o ângulo inteiro,
+// os vizinhos da frente param a 72°, quase de perfil: viram uma lâmina de ~20 px
+// cuja borda o Chrome não suaviza (serrilha, e na volta de um projeto o anel
+// fica parado nessa pose). Com 0,75 eles param a 54° e os de trás a 108° (verso).
+const GIRO_CARD = 0.75;
 
 // Texto do projeto da frente (as cópias que reservam a altura usam as mesmas classes).
 const CL_NOME = "mt-2 font-serif text-[clamp(2rem,4vw,3rem)] leading-none";
@@ -302,9 +307,9 @@ export function HeliceSolucoes() {
           opacidade *= 1 - p;
         }
 
-        // O card gira o ângulo inteiro com o anel: de frente na frente, de
-        // costas quando passa por trás (aí aparece o verso).
-        const giroCard = norm(a) * monta; // graus
+        // O card gira com o anel, mas só GIRO_CARD do ângulo: de frente na
+        // frente, de costas quando passa por trás (aí aparece o verso).
+        const giroCard = norm(a) * GIRO_CARD * monta; // graus
         definir(el, "visibility", "visible");
         definir(el, "transform", `translate(-50%,-50%) translate3d(${f2(x)}px,${f2(y)}px,${f2(z)}px) rotateY(${f2(giroCard)}deg) rotateZ(${f2(giro * (1 - monta))}deg)`);
 

@@ -26,6 +26,13 @@ revisor-otimizacao ──┤
   Os revisores **só rodam com um "sim"**, porque consomem bastante do limite de
   uso. Se o usuário pedir ajustes, o hook pergunta de novo quando eles
   terminarem. Marcações de rastreabilidade não contam como código novo.
+- **Só o que a própria sessão editou:** o hook lê o histórico da conversa e só
+  considera os arquivos que aquela sessão alterou. Contam o Edit, o Write e os
+  comandos de terminal que escrevem no arquivo (`sed -i`, `>`, `tee`, `--write`
+  e outros); comandos que só leem não contam. Arquivos alterados só por outra
+  sessão do Claude no mesmo repositório são ignorados. A impressão digital fica
+  guardada por sessão em `.ultima-revisao`. Sem acesso ao histórico, o hook
+  considera todas as mudanças.
 - **Manual:** peça "rode os revisores no código alterado", "revise o projeto
   inteiro" ou "planeje as correções do último relatório".
 - **Pausar:** crie um arquivo vazio `.claude/revisoes/PAUSADO`. Apague para religar.

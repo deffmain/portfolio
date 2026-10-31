@@ -4,6 +4,7 @@
 
 ## Estrutura do site
 
+<!-- REVISAO[ADV-20261030-2152-04] baixa — README descreve a home antiga (índice com prévia que segue o cursor, morph "a partir do índice") e não lista content/capturas/ → .claude/revisoes/2026-10-30-2152-adversarial.md -->
 - **/** — hero, índice de soluções (prévia que segue o cursor), processo, sobre, contato
 - **/solucoes/[slug]** — estudo de caso, gerado estaticamente; o título faz *morph* a partir do índice com `<ViewTransition>`
 - **/solucoes/viaja-mais#experimente** — protótipo ao vivo do gerador de roteiros com IA
@@ -31,7 +32,7 @@ Sem chave, o gerador de roteiros mostra um exemplo pré-gerado e a paleta usa o 
 
 Tudo está em [`content/perfil.ts`](content/perfil.ts): perfil, soluções (com problema, solução, processo, resultado e números), estudos, processo e trajetória. Para exibir o LinkedIn, preencha `perfil.linkedin`.
 
-As ilustrações das soluções ficam em [`components/visuais.tsx`](components/visuais.tsx) — são esquemáticas e podem ser trocadas por capturas de tela reais.
+As ilustrações das soluções ficam em [`components/visuais.tsx`](components/visuais.tsx) — são esquemáticas e podem ser trocadas por capturas de tela reais. Uma captura vai em `content/capturas/` (16:10, WebP) e entra no mapa `capturas` do mesmo arquivo, com texto alternativo e legenda; hoje o Cultiva já usa a sua.
 
 ## Código
 

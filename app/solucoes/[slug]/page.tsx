@@ -7,7 +7,7 @@ import { perfil, solucoes } from "@/content/perfil";
 import { SiteHeader } from "@/components/site-header";
 import { Contato } from "@/components/contato";
 import { CommandPalette } from "@/components/command-palette";
-import { VisualSolucao } from "@/components/visuais";
+import { VisualSolucao, legendaVisual } from "@/components/visuais";
 import { Label, Lines, Reveal } from "@/components/ui";
 import { VoltarLink } from "@/components/voltar-link";
 import { RolarParaTopo } from "@/components/rolar-topo";
@@ -33,6 +33,7 @@ const wrap = "mx-auto max-w-[1400px] px-5 md:px-10";
 const atraso = (d: number) => ({ "--d": d }) as React.CSSProperties;
 
 export default async function SolucaoPage({ params }: PageProps<"/solucoes/[slug]">) {
+  // REVISAO[ADV-20261030-2152-01] baixa — await params fora de <Suspense> com partialPrefetching gera o erro "URL data during prerendering" no dev (pré-existente, não vem deste diff) → .claude/revisoes/2026-10-30-2152-adversarial.md
   const { slug } = await params;
   const idx = solucoes.findIndex((s) => s.slug === slug);
   if (idx === -1) notFound();
@@ -73,12 +74,13 @@ export default async function SolucaoPage({ params }: PageProps<"/solucoes/[slug
           <div className="mt-8 rounded-2xl border border-line bg-paper-2 px-4 py-6 md:mt-12 md:px-16 md:py-12">
             <ViewTransition name={`capa-${s.slug}`} share="morph" default="none">
               <div className="mx-auto max-w-4xl overflow-hidden rounded-xl border border-line bg-paper-2 shadow-[0_24px_50px_-18px_rgb(20_20_19/0.45)]">
-                <VisualSolucao visual={s.visual} className="block aspect-[16/10] h-auto w-full" />
+                {/* REVISAO[OTM-20261030-2152-01] alta — (também) capa é o LCP no celular e baixa os 124,5 KB do 1920w: 3,4 s × 1,5 s com 960w → .claude/revisoes/2026-10-30-2152-otimizacao.md */}
+                <VisualSolucao visual={s.visual} className="block aspect-[16/10] h-auto w-full" destaque />
               </div>
             </ViewTransition>
           </div>
           <p className="chegada mt-3 font-mono text-[11px] text-muted" style={atraso(1)}>
-            Ilustração esquemática da interface.
+            {legendaVisual(s.visual)}
           </p>
 
           <div className="mt-12 grid gap-10 md:mt-16 md:grid-cols-12">

@@ -1,8 +1,26 @@
+// REVISAO[OTM-20261030-2152-03] baixa — next/image com unoptimized põe ~10,6 KB (~5,6 KB gz) de runtime no chunk comum de todas as rotas e só gera um <img> simples → .claude/revisoes/2026-10-30-2152-otimizacao.md
+import Image, { type StaticImageData } from "next/image";
 import type { Visual } from "@/content/perfil";
+import cultivaPlanejador from "@/content/capturas/cultiva-planejador.webp";
 
 // Composições ilustrativas de cada solução, desenhadas em SVG com a paleta do
-// site. São esquemáticas de propósito (sem dados reais); podem ser trocadas
-// por capturas de tela das aplicações.
+// site. São esquemáticas de propósito (sem dados reais); as soluções que já têm
+// uma captura de tela da aplicação (abaixo) usam a captura no lugar.
+
+/** Capturas reais (16:10). Aparecem no card do anel e na capa do estudo de caso. */
+const capturas: Partial<Record<Visual, { src: StaticImageData; alt: string; legenda: string }>> = {
+  // REVISAO[ADV-20261030-2152-05] info — a captura mostra "Início 30/10/2026" e "Dia 60 · 30 de out. de 2026" ao mesmo tempo → .claude/revisoes/2026-10-30-2152-adversarial.md
+  cultiva: {
+    src: cultivaPlanejador,
+    alt: "Planejador do Cultiva: canteiros de tomate, manjericão, pimentão, morango e milho, com o inspetor aberto num tomate em floração.",
+    legenda: "Captura do Cultiva rodando com uma horta de demonstração e clima real de Anápolis.",
+  },
+};
+
+/** Legenda da capa: diz se a imagem é uma captura real ou uma ilustração. */
+export function legendaVisual(visual: Visual) {
+  return capturas[visual]?.legenda ?? "Ilustração esquemática da interface.";
+}
 
 const INK = "var(--ink)";
 const RUST = "var(--rust)";
@@ -122,6 +140,7 @@ function Manuais() {
   );
 }
 
+// REVISAO[ADV-20261030-2152-03] baixa — SVG do Cultiva ficou inalcançável (capturas.cultiva sempre existe) e continua no bundle do cliente via helice → .claude/revisoes/2026-10-30-2152-adversarial.md
 function Cultiva() {
   const OLIVE = "#5d6b35";
   return (
@@ -274,7 +293,28 @@ function Park() {
   );
 }
 
-export function VisualSolucao({ visual, className }: { visual: Visual; className?: string }) {
+export function VisualSolucao({ visual, className, destaque = false }: { visual: Visual; className?: string; destaque?: boolean }) {
+  const captura = capturas[visual];
+  if (captura) {
+    // REVISAO[OTM-20261030-2152-04] info — as 10 fatias dividem 1 decodificação (3,3 MB + 4,4 MB na GPU, upload 3,5 ms uma vez, sem custo por quadro); arquivo só do anel pouparia ~6,8 MB mas tiraria a capa do cache no morph → .claude/revisoes/2026-10-30-2152-otimizacao.md
+    // Sem otimização: o card e a capa pedem o mesmo arquivo, então no morph
+    // capa-… a imagem da página nova já está baixada e decodificada.
+    // `destaque` = capa do estudo de caso, acima da dobra.
+    // REVISAO[ADV-20261030-2152-02] baixa — alt descritivo repetido nas 10 fatias do card do anel (o link já tem aria-label); falta um modo decorativo (alt="") → .claude/revisoes/2026-10-30-2152-adversarial.md
+    // REVISAO[OTM-20261030-2152-01] alta — um só arquivo 1920×1200 (124,5 KB) para todo dispositivo: LCP de /solucoes/cultiva no celular 4×/4G lento vai a 3,4 s (1,5 s com 960w); manter card=capa no mesmo URL via srcset+sizes iguais → .claude/revisoes/2026-10-30-2152-otimizacao.md
+    // REVISAO[OTM-20261030-2152-02] média — o lazy do anel não adia nada (palco a 1.012/1.083 px, dentro da distância de carga): a home baixa +124,8 KB (+32%) em toda visita e o load sobe ~440 ms no celular → .claude/revisoes/2026-10-30-2152-otimizacao.md
+    return (
+      <Image
+        src={captura.src}
+        alt={captura.alt}
+        unoptimized
+        draggable={false}
+        loading={destaque ? "eager" : "lazy"}
+        fetchPriority={destaque ? "high" : undefined}
+        className={`object-cover ${className ?? ""}`}
+      />
+    );
+  }
   return (
     <svg viewBox="0 0 800 500" className={className} role="img" aria-label="Ilustração esquemática da solução">
       {visual === "dashboard" && <Dashboard />}

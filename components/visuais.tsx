@@ -1,21 +1,31 @@
-// REVISAO[OTM-20261030-2152-03] baixa — next/image com unoptimized põe ~10,6 KB (~5,6 KB gz) de runtime no chunk comum de todas as rotas e só gera um <img> simples → .claude/revisoes/2026-10-30-2152-otimizacao.md
-import Image, { type StaticImageData } from "next/image";
+import type { StaticImageData } from "next/image";
 import type { Visual } from "@/content/perfil";
-import cultivaPlanejador from "@/content/capturas/cultiva-planejador.webp";
+import cultiva960 from "@/content/capturas/cultiva-planejador-960.webp";
+import cultiva1280 from "@/content/capturas/cultiva-planejador-1280.webp";
+import cultiva1920 from "@/content/capturas/cultiva-planejador-1920.webp";
 
 // Composições ilustrativas de cada solução, desenhadas em SVG com a paleta do
 // site. São esquemáticas de propósito (sem dados reais); as soluções que já têm
 // uma captura de tela da aplicação (abaixo) usam a captura no lugar.
 
-/** Capturas reais (16:10). Aparecem no card do anel e na capa do estudo de caso. */
-const capturas: Partial<Record<Visual, { src: StaticImageData; alt: string; legenda: string }>> = {
+/** Capturas reais (16:10), em 960, 1280 e 1920 px de largura. Aparecem no card
+ *  do anel e na capa do estudo de caso. */
+const capturas: Partial<Record<Visual, { versoes: StaticImageData[]; alt: string; legenda: string }>> = {
   // REVISAO[ADV-20261030-2152-05] info — a captura mostra "Início 30/10/2026" e "Dia 60 · 30 de out. de 2026" ao mesmo tempo → .claude/revisoes/2026-10-30-2152-adversarial.md
   cultiva: {
-    src: cultivaPlanejador,
+    versoes: [cultiva960, cultiva1280, cultiva1920],
     alt: "Planejador do Cultiva: canteiros de tomate, manjericão, pimentão, morango e milho, com o inspetor aberto num tomate em floração.",
     legenda: "Captura do Cultiva rodando com uma horta de demonstração e clima real de Anápolis.",
   },
 };
+
+/**
+ * Largura em que a captura aparece na capa do estudo de caso (a maior das duas):
+ * no celular, a tela menos as margens (px-5 + px-4 + borda); a partir de md,
+ * até 896 px (max-w-4xl) menos as margens (px-10 + px-16 + borda). O card do
+ * anel nunca passa disso, então usa a mesma conta — e pede o mesmo arquivo.
+ */
+const SIZES_CAPTURA = "(max-width: 767px) calc(100vw - 74px), min(896px, calc(100vw - 210px))";
 
 /** Legenda da capa: diz se a imagem é uma captura real ou uma ilustração. */
 export function legendaVisual(visual: Visual) {
@@ -301,14 +311,21 @@ export function VisualSolucao({ visual, className, destaque = false }: { visual:
     // capa-… a imagem da página nova já está baixada e decodificada.
     // `destaque` = capa do estudo de caso, acima da dobra.
     // REVISAO[ADV-20261030-2152-02] baixa — alt descritivo repetido nas 10 fatias do card do anel (o link já tem aria-label); falta um modo decorativo (alt="") → .claude/revisoes/2026-10-30-2152-adversarial.md
-    // REVISAO[OTM-20261030-2152-01] alta — um só arquivo 1920×1200 (124,5 KB) para todo dispositivo: LCP de /solucoes/cultiva no celular 4×/4G lento vai a 3,4 s (1,5 s com 960w); manter card=capa no mesmo URL via srcset+sizes iguais → .claude/revisoes/2026-10-30-2152-otimizacao.md
-    // REVISAO[OTM-20261030-2152-02] média — o lazy do anel não adia nada (palco a 1.012/1.083 px, dentro da distância de carga): a home baixa +124,8 KB (+32%) em toda visita e o load sobe ~440 ms no celular → .claude/revisoes/2026-10-30-2152-otimizacao.md
+    const maior = captura.versoes.at(-1)!;
     return (
-      <Image
-        src={captura.src}
+      // Um <img> à mão em vez de next/image: as versões já vêm prontas, e o
+      // srcSet/sizes é o mesmo no card e na capa — cada aparelho baixa uma
+      // versão só (960 px num celular), e o morph a reaproveita.
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={maior.src}
+        srcSet={captura.versoes.map((v) => `${v.src} ${v.width}w`).join(", ")}
+        sizes={SIZES_CAPTURA}
+        width={maior.width}
+        height={maior.height}
         alt={captura.alt}
-        unoptimized
         draggable={false}
+        decoding="async"
         loading={destaque ? "eager" : "lazy"}
         fetchPriority={destaque ? "high" : undefined}
         className={`object-cover ${className ?? ""}`}

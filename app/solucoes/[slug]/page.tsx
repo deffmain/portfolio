@@ -74,7 +74,6 @@ export default async function SolucaoPage({ params }: PageProps<"/solucoes/[slug
           <div className="mt-8 rounded-2xl border border-line bg-paper-2 px-4 py-6 md:mt-12 md:px-16 md:py-12">
             <ViewTransition name={`capa-${s.slug}`} share="morph" default="none">
               <div className="mx-auto max-w-4xl overflow-hidden rounded-xl border border-line bg-paper-2 shadow-[0_24px_50px_-18px_rgb(20_20_19/0.45)]">
-                {/* REVISAO[OTM-20261030-2152-01] alta — (também) capa é o LCP no celular e baixa os 124,5 KB do 1920w: 3,4 s × 1,5 s com 960w → .claude/revisoes/2026-10-30-2152-otimizacao.md */}
                 <VisualSolucao visual={s.visual} className="block aspect-[16/10] h-auto w-full" destaque />
               </div>
             </ViewTransition>

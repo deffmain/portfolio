@@ -15,7 +15,7 @@ export function Contato() {
   ];
 
   return (
-    <footer id="contato" className="scroll-mt-16 bg-ink text-paper">
+    <footer id="contato" className="adiar-render scroll-mt-16 bg-ink text-paper">
       <div className="mx-auto max-w-[1400px] px-5 pt-24 pb-10 md:px-10 md:pt-36">
         <Label className="text-paper/50">Contato</Label>
         <h2 className="mt-6 font-serif text-[clamp(3.5rem,12vw,12rem)] leading-[0.88] tracking-[-0.02em]">

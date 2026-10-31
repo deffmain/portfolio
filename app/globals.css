@@ -82,6 +82,18 @@ body {
   background-size: 100% 1px;
 }
 
+/* Seções da home fora do carrossel. Na volta de um estudo de caso a home
+   inteira reaparece dentro da transição; pular o que está fora da tela alivia
+   cada quadro em máquinas lentas. Só durante a transição: ligado sempre, a
+   rolagem suave das âncoras do menu calcula o destino com a altura estimada e
+   para longe da seção no celular. O `auto` guarda a altura real de cada uma. */
+.adiar-render {
+  contain-intrinsic-size: auto var(--altura-estimada, 900px);
+}
+:root:active-view-transition .adiar-render {
+  content-visibility: auto;
+}
+
 .scrollbar-none {
   scrollbar-width: none;
 }
@@ -107,20 +119,12 @@ body {
   animation: none;
 }
 
-/* Sai devagar e pousa macio (ease-in-out suave). */
+/* Sai devagar e pousa macio (ease-in-out suave). Sem filter no voo: um blur
+   na capa grande e no título derrubava a ida para ~30 fps (custo de GPU). */
 ::view-transition-group(.morph) {
   animation-duration: 540ms;
   animation-timing-function: cubic-bezier(0.45, 0, 0.2, 1);
   z-index: 50;
-}
-/* Blur leve no meio do voo. */
-::view-transition-image-pair(.morph) {
-  animation-name: voo-desfoque;
-}
-@keyframes voo-desfoque {
-  45% {
-    filter: blur(2.5px);
-  }
 }
 
 ::view-transition-old(.home-sai),

@@ -14,7 +14,7 @@ export function Hero() {
   const { copiado, copiar } = useCopiar(perfil.email, () => (window.location.href = `mailto:${perfil.email}`));
 
   return (
-    <section id="inicio" className={`${wrap} flex min-h-[100svh] flex-col justify-end pt-24 pb-8 md:pt-28 md:pb-10`}>
+    <section id="inicio" className={`${wrap} adiar-render flex min-h-[100svh] [--altura-estimada:100svh] flex-col justify-end pt-24 pb-8 md:pt-28 md:pb-10`}>
       <Reveal className="mb-5 flex items-center justify-between gap-4 text-muted md:mb-8">
         <Label>(Portfolio — 2026)</Label>
         <a href="#solucoes" className="group inline-flex items-center gap-1.5 text-ink">
@@ -93,7 +93,7 @@ export function Hero() {
 
 export function Estudos() {
   return (
-    <section className={`${wrap} pb-24 md:pb-32`}>
+    <section className={`${wrap} adiar-render pb-24 md:pb-32`}>
       <Reveal className="grid gap-6 border-t border-line pt-10 md:grid-cols-12">
         <div className="md:col-span-3">
           <Label className="text-muted">Estudos e exercícios</Label>
@@ -125,7 +125,7 @@ export function Processo() {
   const secao = useRef<HTMLElement>(null);
   const lista = useRef<HTMLOListElement>(null);
   return (
-    <section ref={secao} id="processo" className="relative isolate scroll-mt-16 bg-ink text-paper">
+    <section ref={secao} id="processo" className="adiar-render relative isolate scroll-mt-16 bg-ink text-paper">
       {/* Campo de tokens atrás do conteúdo; o passo perto do cursor ganha [data-foco]. */}
       <CampoTokens area={secao} alvos={lista} />
       <div className={`${wrap} relative grid gap-14 py-24 md:grid-cols-12 md:py-36`}>
@@ -169,7 +169,7 @@ export function Processo() {
 export function Sobre() {
   const fita = [...stack, ...stack];
   return (
-    <section id="sobre" className="scroll-mt-16">
+    <section id="sobre" className="adiar-render scroll-mt-16">
       <div className={`${wrap} grid gap-14 py-24 md:grid-cols-12 md:py-36`}>
         <div className="md:col-span-5">
           <Label className="text-muted">Sobre</Label>

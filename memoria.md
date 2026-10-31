@@ -111,6 +111,10 @@ qualquer sessão ou conta do Claude que trabalhar aqui. Complementa o
     `#d4bea3`, link `#e9a77f`;
   - atenção ao ângulo: o card i está em `ângulo − i·passo`. Com o sinal
     trocado, o destaque cai no card errado.
+  - **cards giram 75% do ângulo do anel** (`GIRO_CARD`): com o ângulo
+    inteiro os vizinhos paravam a 72°, quase de perfil, e a borda serrilhava
+    (o Chrome não suaviza a borda de camada 3D tão inclinada). Borda
+    transparente e desenhar a face maior não resolvem;
   - **sem `filter` no voo do morph:** um `blur(2.5px)` na capa e no título
     derrubava a ida para ~30 fps (GPU). Sem ele, ~110 fps. As seções da home
     usam `.adiar-render` (`content-visibility` só durante a transição; ligado
@@ -156,4 +160,9 @@ qualquer sessão ou conta do Claude que trabalhar aqui. Complementa o
   (`git grep -n "REVISAO\["`).
 - **Servidor de desenvolvimento:** se não houver nenhum rodando, suba com
   `npx next dev -p 3000`. O `next build` **não** pode rodar na mesma pasta
-  com o dev ligado (veja a regra 6).
+  com o dev ligado (veja a regra 6). Se `/solucoes/*` der "Jest worker
+  encountered 2 child process exceptions", o worker de rotas do dev morreu
+  (build em paralelo, ou o Claude Code encerrou o dev em segundo plano por
+  falta de memória e deixou o servidor órfão na porta): mate a árvore do
+  processo da porta 3000 e suba o dev de novo. Prefira o dev num terminal do
+  próprio Micael.

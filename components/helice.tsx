@@ -67,6 +67,7 @@ const INCLINACAO = -7; // graus: os cards de trás aparecem um pouco acima
 const FUNDO = "#1f1915";
 const LUZ_PALCO = "rgb(224 118 79 / 0.09)";
 const FOCO_MS = 280;
+const RESERVA_MS = 4000; // sem navegação até aqui, abrir() desiste do morph e recarrega
 const RECUO_MS = 200; // cada card que não foi clicado recua e some nesse tempo…
 const RECUO_PASSO_MS = 40; // …começando pelos vizinhos, um passo depois do outro
 const ENTRADA_MS = 3300; // quando o último card termina de montar
@@ -473,13 +474,31 @@ export function HeliceSolucoes() {
     trazerParaFrente(frente.current + passos);
   };
 
+  // Plano B de abrir(): se o router.push não completar (servidor fora do ar,
+  // rota com erro), a home não pode ficar travada no foco.
+  const reserva = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(reserva.current), []);
+
+  const navegar = (url: string) => {
+    const origem = window.location.pathname;
+    router.push(url, { transitionTypes: ["abrir-projeto"] });
+    window.clearTimeout(reserva.current);
+    reserva.current = window.setTimeout(() => {
+      if (window.location.pathname !== origem) return; // a navegação aconteceu
+      st.current.foco = null; // os cards voltam
+      posicionar();
+      acordar.current();
+      window.location.assign(url);
+    }, RESERVA_MS);
+  };
+
   /** Abre o estudo de caso: foco (350 ms na home) e depois navega com o morph. */
   const abrir = (card: number) => {
     const s = st.current;
     if (s.foco) return;
     const url = `/solucoes/${solucoes[card].slug}`;
     if (reduce) {
-      router.push(url, { transitionTypes: ["abrir-projeto"] });
+      navegar(url);
       return;
     }
     trazerParaFrente(card);
@@ -487,7 +506,7 @@ export function HeliceSolucoes() {
     window.setTimeout(() => {
       s.yaw = s.alvoYaw; // alinhamento exato: rotateY(0) no card clicado
       posicionar();
-      router.push(url, { transitionTypes: ["abrir-projeto"] });
+      navegar(url);
     }, FOCO_MS);
   };
 

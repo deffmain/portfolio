@@ -8,6 +8,12 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
+## Memória do projeto
+
+Antes de trabalhar, leia `memoria.md` (raiz do projeto): quem é o usuário, as
+regras combinadas com ele, as decisões de design já tomadas e o que está em
+andamento.
+
 ## Revisão automática de código
 
 Ao terminar uma tarefa com código novo, o hook `Stop`

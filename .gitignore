@@ -40,3 +40,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# revisões automáticas: relatórios e tarefas ficam só na máquina, porque podem
+# descrever falhas de segurança ainda não corrigidas (o repositório é público)
+/.claude/revisoes/*
+!/.claude/revisoes/LEIA-ME.md
+!/.claude/revisoes/MODELO-*.md
+/.claude/settings.local.json

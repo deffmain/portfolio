@@ -7,3 +7,14 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## Revisão automática de código
+
+Ao terminar uma tarefa com código novo, o hook `Stop`
+(`.claude/hooks/revisar-ao-finalizar.mjs`) pede ao Claude duas perguntas ao
+usuário: se aprova o trabalho e se deve rodar os revisores. Só com um "sim"
+rodam `revisor-adversarial` e `revisor-otimizacao` em paralelo e, depois,
+`planejador-correcoes`, que transforma os relatórios em tarefas. O fluxo, o formato das marcações
+`REVISAO[...]`, as escalas e os modelos de relatório e tarefas estão em
+`.claude/revisoes/LEIA-ME.md`. Ao corrigir um achado, remova a marcação dele no
+mesmo commit.

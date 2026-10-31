@@ -39,7 +39,9 @@ export function Lines({
   return (
     <span className={className}>
       {lines.map((line, i) => (
-        <span key={i} className="block overflow-hidden pb-[0.08em]">
+        // A folga de baixo cabe a cedilha (o ç de "Soluções" desce além do p);
+        // a margem negativa devolve o espaço extra, e o ritmo das linhas não muda.
+        <span key={i} className="-mb-[0.08em] block overflow-hidden pb-[0.16em]">
           <motion.span
             className="block"
             initial={reduce ? false : { y: "105%" }}

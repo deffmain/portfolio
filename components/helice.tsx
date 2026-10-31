@@ -16,7 +16,7 @@ import {
   type PointerEvent,
 } from "react";
 import { AnimatePresence, motion, useInView, useReducedMotion } from "motion/react";
-import { ArrowLeft, ArrowRight, ArrowUpRight } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { solucoes } from "@/content/perfil";
 import { VisualSolucao } from "@/components/visuais";
 import { Label, Lines } from "@/components/ui";
@@ -123,12 +123,12 @@ function alturaDoAnel(largura: number) {
 }
 
 /**
- * Cards grandes — ~27% da largura no desktop (300–430 px), ~62% no celular —,
+ * Cards grandes — ~31% da largura no desktop (340–500 px), ~70% no celular —,
  * mas nunca maiores que o palco: a seção ocupa a tela, então em telas baixas o
  * anel encolhe para caber inteiro.
  */
 function larguraDe(w: number, h: number) {
-  let largura = w < 640 ? clamp(w * 0.62, 210, 280) : clamp(w * 0.27, 300, 430);
+  let largura = w < 640 ? clamp(w * 0.7, 220, 320) : clamp(w * 0.31, 340, 500);
   while (largura > 140 && alturaDoAnel(largura).meia > h / 2 - FOLGA_ANEL) largura -= 4;
   return largura;
 }
@@ -461,7 +461,7 @@ export function HeliceSolucoes() {
     acordar.current();
   };
 
-  // Cliques seguidos nas setas somam: se ainda está girando até um destino,
+  // Toques seguidos nas setas do teclado somam: se ainda está girando até um destino,
   // o próximo passo parte dele — mas sem passar de SETAS_MAX cards além do da
   // frente, para a seta segurada não deixar o anel girando sozinho depois.
   const vizinho = (dir: 1 | -1) => {
@@ -588,20 +588,10 @@ export function HeliceSolucoes() {
             <Lines lines={["Soluções"]} />
           </h2>
         </div>
-        <div className="flex items-center justify-between gap-4 pb-1 sm:justify-end">
-          <span className="font-mono text-sm whitespace-nowrap tabular-nums" aria-hidden>
-            <span className="text-[#e0764f]">{String(ativo + 1).padStart(2, "0")}</span>
-            <span className="text-paper/40"> / {String(n).padStart(2, "0")}</span>
-          </span>
-          <div className="flex gap-2">
-            <BotaoSeta label="Solução anterior" onClick={() => vizinho(-1)}>
-              <ArrowLeft className="size-4" />
-            </BotaoSeta>
-            <BotaoSeta label="Próxima solução" onClick={() => vizinho(1)}>
-              <ArrowRight className="size-4" />
-            </BotaoSeta>
-          </div>
-        </div>
+        <span className="pb-1 font-mono text-sm whitespace-nowrap tabular-nums" aria-hidden>
+          <span className="text-[#e0764f]">{String(ativo + 1).padStart(2, "0")}</span>
+          <span className="text-paper/40"> / {String(n).padStart(2, "0")}</span>
+        </span>
       </div>
 
       <div
@@ -746,18 +736,5 @@ export function HeliceSolucoes() {
         </AnimatePresence>
       </div>
     </section>
-  );
-}
-
-function BotaoSeta({ label, onClick, children }: { label: string; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      onClick={onClick}
-      className="flex size-11 items-center justify-center rounded-full border border-paper/25 transition hover:border-paper hover:bg-paper hover:text-ink"
-    >
-      {children}
-    </button>
   );
 }

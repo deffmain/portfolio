@@ -94,6 +94,19 @@ const ENCOLHE = 0.75;
 const CRESCE = 1.2;
 const LARGURA_MAX_FRENTE = 0.92; // fração da largura do palco que o card da frente pode ocupar
 
+// Nitidez das faces: com perspectiva e rotação juntas, o Chrome desenha a face
+// a 1 px por px CSS e a amplia na tela — em densidade 2 ou 3 a borda e o canto
+// saem em degraus. Cada face é montada `--nitidez` vezes maior (zoom, que
+// aumenta borda, raio e texto juntos) e reduzida com scale() de volta ao tamanho
+// do card, e assim é desenhada na resolução da tela. `--nitidez` é a densidade
+// da tela (1 a 3), escrita por medir(): não muda a cada quadro.
+const NITIDA = {
+  zoom: "var(--nitidez, 1)",
+  width: "calc(100% * var(--nitidez, 1))",
+  transformOrigin: "0 0",
+  transform: "scale(calc(1 / var(--nitidez, 1)))",
+} as const;
+
 // Texto do projeto da frente (as cópias que reservam a altura usam as mesmas classes).
 const CL_NOME = "mt-2 font-serif text-[clamp(2rem,4vw,3rem)] leading-none";
 const CL_DESCRICAO = "mx-auto mt-3 max-w-md text-[15px] leading-snug";
@@ -376,6 +389,7 @@ export function HeliceSolucoes() {
     if (anel.current) {
       s.centro = alturaDoAnel(s.largura, s.cresce, giroDe(s.w), meio).centro;
       anel.current.style.transform = `translateY(${f2(-s.centro)}px) rotateX(${INCLINACAO}deg)`;
+      anel.current.style.setProperty("--nitidez", String(clamp(Math.ceil(window.devicePixelRatio), 1, 3)));
     }
   }, []);
 
@@ -796,7 +810,7 @@ export function HeliceSolucoes() {
                 aria-label={`${s.nome} — abrir estudo de caso`}
                 onClick={(e) => onCardClick(e, i)}
                 onFocus={(e) => onCardFocus(e, i)}
-                className="absolute top-1/2 left-1/2 block w-[180px] rounded-xl outline-none will-change-transform focus-visible:ring-2 focus-visible:ring-rust"
+                className="absolute top-1/2 left-1/2 block aspect-[16/10] w-[180px] rounded-xl outline-none will-change-transform focus-visible:ring-2 focus-visible:ring-rust"
                 style={{ visibility: "hidden", transformStyle: "preserve-3d" }}
               >
                 {/* Destaque da frente: brilho quente que nasce na borda do card
@@ -819,7 +833,8 @@ export function HeliceSolucoes() {
                     ref={(el) => {
                       frentes.current[i] = el;
                     }}
-                    className="relative block aspect-[16/10] w-full overflow-hidden rounded-xl border border-paper/10 bg-paper-2 shadow-[0_30px_60px_-25px_rgb(0_0_0/0.8)] backface-hidden"
+                    className="absolute top-0 left-0 block aspect-[16/10] overflow-hidden rounded-xl border border-paper/10 bg-paper-2 shadow-[0_30px_60px_-25px_rgb(0_0_0/0.8)] backface-hidden"
+                    style={NITIDA}
                   >
                     <VisualSolucao visual={s.visual} className="pointer-events-none block h-full w-full" />
                     {/* Escurece na cor do palco quanto mais para trás. */}
@@ -843,8 +858,14 @@ export function HeliceSolucoes() {
                     versos.current[i] = el;
                   }}
                   aria-hidden
-                  className="absolute inset-0 flex flex-col items-center justify-center gap-2 overflow-hidden rounded-xl border border-paper/10 backface-hidden"
-                  style={{ transform: "rotateY(180deg)", background: "rgb(255 255 255 / 0.04)" }}
+                  className="absolute top-0 left-0 flex flex-col items-center justify-center gap-2 overflow-hidden rounded-xl border border-paper/10 backface-hidden"
+                  style={{
+                    ...NITIDA,
+                    height: NITIDA.width,
+                    // Volta ao tamanho do card, vira de costas e se encaixa nele de novo.
+                    transform: `translateX(calc(100% / var(--nitidez, 1))) rotateY(180deg) ${NITIDA.transform}`,
+                    background: "rgb(255 255 255 / 0.04)",
+                  }}
                 >
                   <span className="font-mono text-xs tracking-widest text-[#e0764f]">{String(i + 1).padStart(2, "0")}</span>
                   <span className="px-6 text-center font-serif text-[clamp(1.1rem,2vw,1.75rem)] leading-tight text-paper/60">{s.nome}</span>

@@ -77,6 +77,16 @@ const PAUSA_VOLTA_MS = 900; // o voo da volta dura 540 ms; o card não pode anda
 // cuja borda o Chrome não suaviza (serrilha, e na volta de um projeto o anel
 // fica parado nessa pose). Com 0,75 eles param a 54° e os de trás a 108° (verso).
 const GIRO_CARD = 0.75;
+// No celular (palco < 640 px) os vizinhos a 72° ficam fora da tela, então não há
+// serrilhado a evitar, e o card do fundo nunca fica escondido para trocar de
+// pose: lá o card gira o ângulo inteiro e a volta em 180° é a mesma pose.
+const giroDe = (w: number) => (w < 640 ? 1 : GIRO_CARD);
+// Com 75% do ângulo, o card que passa pelo fundo (180°) teria de pular de +135°
+// para -135° — um "pisque" no vão entre os cards da frente. Em vez disso cada
+// card gira de forma contínua e troca de pose só enquanto está escondido: atrás
+// do card de destaque ou fora do palco (ver posicionar()). Se nunca ficar
+// escondido, troca ao passar TROCA_MAX graus da frente.
+const TROCA_MAX = 230;
 // O card cresce conforme avança: ENCOLHE× no fundo do anel e até CRESCE× na
 // frente, com a maior parte do crescimento perto da frente (curva quadrática).
 // No celular o teto é menor, para o card da frente não encostar nas bordas.
@@ -118,6 +128,34 @@ const passosAte = (de: number, ate: number) => {
 const raioDe = (largura: number) => largura * 1.12;
 const FOLGA_ANEL = 20; // px livres entre o anel e o título (em cima) e o texto (embaixo)
 
+/**
+ * Caixa do card na tela, em px a partir do meio do palco: os cantos com a
+ * escala, o giro do card, a inclinação do anel, o deslocamento `centro` e a
+ * perspectiva — a mesma conta do CSS, sem ler o layout.
+ */
+function caixaNaTela(x: number, y: number, z: number, giro: number, k: number, largura: number, centro: number) {
+  const sen = Math.sin((-INCLINACAO * Math.PI) / 180);
+  const cos = Math.cos((-INCLINACAO * Math.PI) / 180);
+  const g = (giro * Math.PI) / 180;
+  const caixa = { x0: Infinity, x1: -Infinity, y0: Infinity, y1: -Infinity };
+  for (const lado of [-1, 1]) {
+    const lx = lado * (largura / 2) * k;
+    const X = x + lx * Math.cos(g);
+    const Z = z - lx * Math.sin(g);
+    for (const alto of [-1, 1]) {
+      const Y = y + alto * (largura / 1.6 / 2) * k;
+      const fator = PERSPECTIVA / (PERSPECTIVA - (Z * cos - Y * sen));
+      const tx = X * fator;
+      const ty = (Y * cos + Z * sen - centro) * fator;
+      caixa.x0 = Math.min(caixa.x0, tx);
+      caixa.x1 = Math.max(caixa.x1, tx);
+      caixa.y0 = Math.min(caixa.y0, ty);
+      caixa.y1 = Math.max(caixa.y1, ty);
+    }
+  }
+  return caixa;
+}
+
 /** Escala do card pela profundidade (`prof` = cosseno do ângulo no anel). */
 const escalaDe = (prof: number, cresce: number) => mix(ENCOLHE, cresce, ((prof + 1) / 2) ** 2);
 
@@ -136,7 +174,7 @@ function cresceDe(w: number, largura: number) {
  * `meio` (px abaixo do meio do palco, na tela), e `meia` é essa distância. Só
  * roda quando o palco muda de tamanho.
  */
-function alturaDoAnel(largura: number, cresce: number, meio = 0) {
+function alturaDoAnel(largura: number, cresce: number, giroCard: number, meio = 0) {
   const r = raioDe(largura);
   const sen = Math.sin((-INCLINACAO * Math.PI) / 180);
   const cos = Math.cos((-INCLINACAO * Math.PI) / 180);
@@ -144,7 +182,7 @@ function alturaDoAnel(largura: number, cresce: number, meio = 0) {
   for (let g = 0; g < 360; g += 10) {
     const a = (g * Math.PI) / 180;
     const k = escalaDe(Math.cos(a), cresce);
-    const giro = (norm(g) * GIRO_CARD * Math.PI) / 180;
+    const giro = (norm(g) * giroCard * Math.PI) / 180;
     for (const lado of [-1, 1]) {
       const z = Math.cos(a) * r - lado * (largura / 2) * k * Math.sin(giro);
       for (const alto of [-1, 1]) {
@@ -183,7 +221,7 @@ function alturaDoAnel(largura: number, cresce: number, meio = 0) {
  */
 function larguraDe(w: number, livre: number, meio: number) {
   let largura = w < 640 ? clamp(w * 0.7, 220, 320) : clamp(w * 0.36, 380, 580);
-  while (largura > 140 && alturaDoAnel(largura, cresceDe(w, largura), meio).meia > livre / 2 - FOLGA_ANEL) largura -= 4;
+  while (largura > 140 && alturaDoAnel(largura, cresceDe(w, largura), giroDe(w), meio).meia > livre / 2 - FOLGA_ANEL) largura -= 4;
   return largura;
 }
 
@@ -199,6 +237,9 @@ type Estado = {
   h: number;
   largura: number; // dos cards, em px (depende da largura e da altura do palco)
   cresce: number; // escala do card na frente: CRESCE, ou menos se não couber na largura
+  centro: number; // quanto o anel sobe (translateY), de medir()
+  giroAcum: number[]; // ângulo de cada card sem dar a volta em ±180° (NaN = ainda não medido)
+  anguloAntes: number[]; // ângulo de cada card no quadro anterior
   nuvem: { espalha: number; giro: number }[];
   foco: { card: number; t0: number } | null; // t0 = -1 até o laço carimbar o início
   pausa: number; // ms sem giro automático (enquanto a capa pousa de volta no anel)
@@ -274,6 +315,9 @@ function estadoInicial(volta: number | null): Estado {
     h: 0,
     largura: 0,
     cresce: 1,
+    centro: 0,
+    giroAcum: Array.from({ length: N }, () => NaN),
+    anguloAntes: Array.from({ length: N }, () => NaN),
     nuvem: [],
     foco: null,
     pausa: volta === null ? 0 : PAUSA_VOLTA_MS,
@@ -329,7 +373,10 @@ export function HeliceSolucoes() {
     cards.current.forEach((c) => {
       if (c) c.style.width = largura;
     });
-    if (anel.current) anel.current.style.transform = `translateY(${f2(-alturaDoAnel(s.largura, s.cresce, meio).centro)}px) rotateX(${INCLINACAO}deg)`;
+    if (anel.current) {
+      s.centro = alturaDoAnel(s.largura, s.cresce, giroDe(s.w), meio).centro;
+      anel.current.style.transform = `translateY(${f2(-s.centro)}px) rotateX(${INCLINACAO}deg)`;
+    }
   }, []);
 
   /** Recalcula e aplica o transform de todos os cards. */
@@ -338,9 +385,12 @@ export function HeliceSolucoes() {
       const s = st.current;
       if (!s.w) return;
       const raio = raioDe(s.largura);
+      const giroCard = giroDe(s.w);
       const voo = Math.max(0, s.voo);
       const semEntrada = !!reduce;
 
+      // 1ª passada: posição, escala e ângulo contínuo de cada card.
+      const dados: ({ el: HTMLAnchorElement; n: number; passo: number; prof: number; monta: number; x: number; y: number; z: number; k: number; giro: number; opacidade: number } | undefined)[] = [];
       let melhor = -2;
       let idx = 0;
       for (let i = 0; i < N; i++) {
@@ -366,16 +416,62 @@ export function HeliceSolucoes() {
           opacidade *= 1 - p;
         }
 
-        // O card gira com o anel, mas só GIRO_CARD do ângulo: de frente na
-        // frente, de costas quando passa por trás (aí aparece o verso).
-        const giroCard = norm(a) * GIRO_CARD * monta; // graus
+        // Ângulo contínuo: anda junto com o anel e não dá a volta em ±180°
+        // sozinho (ver TROCA_MAX). Um salto grande (volta de um projeto) recomeça.
+        const n = norm(a);
+        const passo = a - s.anguloAntes[i];
+        if (!(Math.abs(passo) < 45)) s.giroAcum[i] = n;
+        else s.giroAcum[i] += passo;
+        if (Math.abs(s.giroAcum[i]) > TROCA_MAX) s.giroAcum[i] = n;
+        s.anguloAntes[i] = a;
+
+        dados[i] = { el, n, passo: Number.isFinite(passo) ? passo : 0, prof, monta, x, y, z, k: mix(1, escalaDe(prof, s.cresce), monta), giro, opacidade };
+        if (prof > melhor) {
+          melhor = prof;
+          idx = i;
+        }
+      }
+
+      // Troca de pose escondida: um card na metade de trás já assume a pose do
+      // lado para onde vai — chegando ao fundo, a do outro lado; voltando ou
+      // parado, a de sempre —, mas só se ele está escondido nas duas poses (a de
+      // agora e a nova, que fica ~90° virada): inteiro atrás do card de destaque
+      // ou inteiro fora do palco (no celular o destaque não cobre os de trás).
+      // Ninguém vê a troca.
+      const f = dados[idx];
+      if (f && f.monta === 1) {
+        const cobre = caixaNaTela(f.x, f.y, f.z, s.giroAcum[idx] * giroCard, f.k, s.largura, s.centro);
+        const folgaX = (cobre.x1 - cobre.x0) * 0.02;
+        const folgaY = (cobre.y1 - cobre.y0) * 0.02;
+        const escondido = (c: ReturnType<typeof caixaNaTela>) =>
+          (c.x0 >= cobre.x0 + folgaX && c.x1 <= cobre.x1 - folgaX && c.y0 >= cobre.y0 + folgaY && c.y1 <= cobre.y1 - folgaY) || c.x0 >= s.w / 2 || c.x1 <= -s.w / 2;
+        for (let i = 0; i < N; i++) {
+          const d = dados[i];
+          if (!d || i === idx || d.monta < 1 || Math.abs(d.n) <= 90) continue;
+          const indoAoFundo = d.passo * d.n > 0;
+          const nova = indoAoFundo ? d.n - 360 * Math.sign(d.n) : d.n;
+          if (nova === s.giroAcum[i] || Math.abs(nova) > TROCA_MAX) continue;
+          if (!escondido(caixaNaTela(d.x, d.y, d.z, s.giroAcum[i] * giroCard, d.k, s.largura, s.centro))) continue;
+          if (!escondido(caixaNaTela(d.x, d.y, d.z, nova * giroCard, d.k, s.largura, s.centro))) continue;
+          s.giroAcum[i] = nova;
+        }
+      }
+
+      // 2ª passada: escreve o transform e a luz de cada card.
+      for (let i = 0; i < N; i++) {
+        const d = dados[i];
+        if (!d) continue;
+        const { el, prof, monta, x, y, z, k, giro, opacidade } = d;
+        // O card gira com o anel (só GIRO_CARD do ângulo, fora do celular): de
+        // frente na frente, de costas quando passa por trás (aí aparece o verso).
+        const giroDoCard = s.giroAcum[i] * giroCard * monta; // graus
         definir(el, "visibility", "visible");
-        definir(el, "transform", `translate(-50%,-50%) translate3d(${f2(x)}px,${f2(y)}px,${f2(z)}px) rotateY(${f2(giroCard)}deg) rotateZ(${f2(giro * (1 - monta))}deg) scale(${mix(1, escalaDe(prof, s.cresce), monta).toFixed(4)})`);
+        definir(el, "transform", `translate(-50%,-50%) translate3d(${f2(x)}px,${f2(y)}px,${f2(z)}px) rotateY(${f2(giroDoCard)}deg) rotateZ(${f2(giro * (1 - monta))}deg) scale(${k.toFixed(4)})`);
 
         // Luz por card, em variáveis CSS que só mexem em opacidade: os de trás
         // escurecem até a cor do palco e o da frente acende nos últimos ~30°,
         // com curva suave. `prof` é o cosseno do ângulo real do card (o mesmo
-        // de x, z e do rotateY acima), então o card do centro tem prof = 1.
+        // de x e z), então o card do centro tem prof = 1.
         const escuro = ((1 - prof) / 2) * 0.75;
         const acende = suave(clamp((prof - 0.86) / 0.14, 0, 1));
         const opacidadeTxt = String(f2(opacidade));
@@ -386,10 +482,6 @@ export function HeliceSolucoes() {
         // existir), então fica em cada face.
         for (const face of [frentes.current[i], versos.current[i]]) {
           if (face) definir(face, "opacity", opacidadeTxt);
-        }
-        if (prof > melhor) {
-          melhor = prof;
-          idx = i;
         }
       }
       if (idx !== frente.current && !s.foco) {

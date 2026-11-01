@@ -114,7 +114,13 @@ qualquer sessão ou conta do Claude que trabalhar aqui. Complementa o
   - **cards giram 75% do ângulo do anel** (`GIRO_CARD`): com o ângulo
     inteiro os vizinhos paravam a 72°, quase de perfil, e a borda serrilhava
     (o Chrome não suaviza a borda de camada 3D tão inclinada). Borda
-    transparente e desenhar a face maior não resolvem;
+    transparente e desenhar a face maior não resolvem. Com 75%, o card que
+    passa pelo fundo (180°) pulava de +135° para -135° (um "pisque" no vão entre
+    os da frente): agora o ângulo de cada card é contínuo (`giroAcum`) e ele
+    troca de pose só quando está escondido nas duas poses — atrás do card de
+    destaque ou fora do palco (`caixaNaTela`, mesma conta do CSS). No celular
+    (palco < 640 px, `giroDe`) o card nunca fica escondido, mas os vizinhos a
+    72° ficam fora da tela: lá o card gira o ângulo inteiro e não há pulo;
   - **o card cresce conforme avança** (variação "Forte", escolhida em
     /lab/crescer): 0,75× no fundo até 1,2× na frente (`ENCOLHE`/`CRESCE`), com
     teto menor no celular (`LARGURA_MAX_FRENTE`). Cards base ~36% da largura

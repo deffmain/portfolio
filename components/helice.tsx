@@ -77,6 +77,12 @@ const PAUSA_VOLTA_MS = 900; // o voo da volta dura 540 ms; o card não pode anda
 // cuja borda o Chrome não suaviza (serrilha, e na volta de um projeto o anel
 // fica parado nessa pose). Com 0,75 eles param a 54° e os de trás a 108° (verso).
 const GIRO_CARD = 0.75;
+// O card cresce conforme avança: ENCOLHE× no fundo do anel e até CRESCE× na
+// frente, com a maior parte do crescimento perto da frente (curva quadrática).
+// No celular o teto é menor, para o card da frente não encostar nas bordas.
+const ENCOLHE = 0.75;
+const CRESCE = 1.2;
+const LARGURA_MAX_FRENTE = 0.92; // fração da largura do palco que o card da frente pode ocupar
 
 // Texto do projeto da frente (as cópias que reservam a altura usam as mesmas classes).
 const CL_NOME = "mt-2 font-serif text-[clamp(2rem,4vw,3rem)] leading-none";
@@ -110,32 +116,74 @@ const passosAte = (de: number, ate: number) => {
 };
 /** Raio só o bastante para os vizinhos não se sobreporem. */
 const raioDe = (largura: number) => largura * 1.12;
-const FOLGA_ANEL = 12; // px livres em cima e embaixo do anel, dentro do palco
+const FOLGA_ANEL = 20; // px livres entre o anel e o título (em cima) e o texto (embaixo)
 
-/**
- * Altura do anel na tela. Com a inclinação, o card da frente desce e cresce
- * (perspectiva) e o de trás sobe e encolhe; `centro` é quanto subir o anel para
- * os dois ficarem à mesma distância do meio do palco, e `meia` é essa distância.
- */
-function alturaDoAnel(largura: number) {
-  const r = raioDe(largura);
-  const sen = Math.sin((-INCLINACAO * Math.PI) / 180);
-  const cos = Math.cos((-INCLINACAO * Math.PI) / 180);
-  const borda = (largura / 1.6 / 2) * cos + r * sen; // da linha do meio até a borda de fora
-  const prof = r * cos - (largura / 1.6 / 2) * sen;
-  const frente = PERSPECTIVA / (PERSPECTIVA - prof);
-  const tras = PERSPECTIVA / (PERSPECTIVA + prof);
-  return { centro: (borda * (frente - tras)) / (frente + tras), meia: (2 * borda * frente * tras) / (frente + tras) };
+/** Escala do card pela profundidade (`prof` = cosseno do ângulo no anel). */
+const escalaDe = (prof: number, cresce: number) => mix(ENCOLHE, cresce, ((prof + 1) / 2) ** 2);
+
+/** Escala do card da frente: CRESCE, ou menos se ele passaria de LARGURA_MAX_FRENTE do palco. */
+function cresceDe(w: number, largura: number) {
+  const frenteNaTela = (largura * PERSPECTIVA) / (PERSPECTIVA - raioDe(largura)); // sem escala
+  return clamp((w * LARGURA_MAX_FRENTE) / frenteNaTela, 1, CRESCE);
 }
 
 /**
- * Cards grandes — ~31% da largura no desktop (340–500 px), ~70% no celular —,
- * mas nunca maiores que o palco: a seção ocupa a tela, então em telas baixas o
- * anel encolhe para caber inteiro.
+ * Altura do anel na tela, medida nos cantos de cada card ao longo da volta —
+ * com a escala de cada posição, o giro do card, a inclinação e a perspectiva.
+ * Com os cards de tamanhos diferentes, a borda mais alta pode ser a de cima do
+ * card da frente, e não a dos de trás. `centro` é quanto subir o anel (antes da
+ * perspectiva) para a borda de cima e a de baixo ficarem à mesma distância de
+ * `meio` (px abaixo do meio do palco, na tela), e `meia` é essa distância. Só
+ * roda quando o palco muda de tamanho.
  */
-function larguraDe(w: number, h: number) {
-  let largura = w < 640 ? clamp(w * 0.7, 220, 320) : clamp(w * 0.31, 340, 500);
-  while (largura > 140 && alturaDoAnel(largura).meia > h / 2 - FOLGA_ANEL) largura -= 4;
+function alturaDoAnel(largura: number, cresce: number, meio = 0) {
+  const r = raioDe(largura);
+  const sen = Math.sin((-INCLINACAO * Math.PI) / 180);
+  const cos = Math.cos((-INCLINACAO * Math.PI) / 180);
+  const cantos: [number, number][] = []; // [y, z] de cada canto, já com a inclinação
+  for (let g = 0; g < 360; g += 10) {
+    const a = (g * Math.PI) / 180;
+    const k = escalaDe(Math.cos(a), cresce);
+    const giro = (norm(g) * GIRO_CARD * Math.PI) / 180;
+    for (const lado of [-1, 1]) {
+      const z = Math.cos(a) * r - lado * (largura / 2) * k * Math.sin(giro);
+      for (const alto of [-1, 1]) {
+        const y = alto * (largura / 1.6 / 2) * k; // card 16:10
+        cantos.push([y * cos + z * sen, z * cos - y * sen]);
+      }
+    }
+  }
+  const bordas = (c: number) => {
+    let cima = Infinity;
+    let baixo = -Infinity;
+    for (const [y, z] of cantos) {
+      const v = ((y - c) * PERSPECTIVA) / (PERSPECTIVA - z);
+      cima = Math.min(cima, v);
+      baixo = Math.max(baixo, v);
+    }
+    return { cima, baixo };
+  };
+  let lo = -largura;
+  let hi = largura;
+  for (let i = 0; i < 30; i++) {
+    const c = (lo + hi) / 2;
+    const { cima, baixo } = bordas(c);
+    if (cima + baixo > 2 * meio) lo = c;
+    else hi = c;
+  }
+  const centro = (lo + hi) / 2;
+  return { centro, meia: bordas(centro).baixo - meio };
+}
+
+/**
+ * Cards grandes — ~36% da largura no desktop (380–580 px), ~70% no celular —,
+ * mas nunca maiores que o palco: a seção ocupa a tela, então em telas baixas o
+ * anel encolhe para caber inteiro no espaço livre (`livre` px de altura,
+ * centrado `meio` px abaixo do meio do palco), já com o card da frente crescido.
+ */
+function larguraDe(w: number, livre: number, meio: number) {
+  let largura = w < 640 ? clamp(w * 0.7, 220, 320) : clamp(w * 0.36, 380, 580);
+  while (largura > 140 && alturaDoAnel(largura, cresceDe(w, largura), meio).meia > livre / 2 - FOLGA_ANEL) largura -= 4;
   return largura;
 }
 
@@ -150,6 +198,7 @@ type Estado = {
   w: number;
   h: number;
   largura: number; // dos cards, em px (depende da largura e da altura do palco)
+  cresce: number; // escala do card na frente: CRESCE, ou menos se não couber na largura
   nuvem: { espalha: number; giro: number }[];
   foco: { card: number; t0: number } | null; // t0 = -1 até o laço carimbar o início
   pausa: number; // ms sem giro automático (enquanto a capa pousa de volta no anel)
@@ -224,6 +273,7 @@ function estadoInicial(volta: number | null): Estado {
     w: 0,
     h: 0,
     largura: 0,
+    cresce: 1,
     nuvem: [],
     foco: null,
     pausa: volta === null ? 0 : PAUSA_VOLTA_MS,
@@ -234,6 +284,8 @@ export function HeliceSolucoes() {
   const router = useRouter();
   const secao = useRef<HTMLElement>(null);
   const palco = useRef<HTMLDivElement>(null);
+  const cabecalho = useRef<HTMLDivElement>(null); // título e contador, acima do palco
+  const rodape = useRef<HTMLDivElement>(null); // projeto da frente, abaixo do palco
   const anel = useRef<HTMLDivElement>(null);
   const cards = useRef<(HTMLAnchorElement | null)[]>([]);
   const frentes = useRef<(HTMLSpanElement | null)[]>([]);
@@ -265,12 +317,19 @@ export function HeliceSolucoes() {
     const s = st.current;
     s.w = el.clientWidth;
     s.h = el.clientHeight;
-    s.largura = larguraDe(s.w, s.h);
+    // O palco passa um pouco por baixo do título e termina antes do texto: o anel
+    // cabe e se centra no espaço livre entre os dois, e não no palco.
+    const p = el.getBoundingClientRect();
+    const cima = cabecalho.current ? cabecalho.current.getBoundingClientRect().bottom - p.top : 0;
+    const baixo = rodape.current ? rodape.current.getBoundingClientRect().top - p.top : s.h;
+    const meio = (cima + baixo) / 2 - s.h / 2;
+    s.largura = larguraDe(s.w, baixo - cima, meio);
+    s.cresce = cresceDe(s.w, s.largura);
     const largura = `${s.largura}px`;
     cards.current.forEach((c) => {
       if (c) c.style.width = largura;
     });
-    if (anel.current) anel.current.style.transform = `translateY(${f2(-alturaDoAnel(s.largura).centro)}px) rotateX(${INCLINACAO}deg)`;
+    if (anel.current) anel.current.style.transform = `translateY(${f2(-alturaDoAnel(s.largura, s.cresce, meio).centro)}px) rotateX(${INCLINACAO}deg)`;
   }, []);
 
   /** Recalcula e aplica o transform de todos os cards. */
@@ -311,7 +370,7 @@ export function HeliceSolucoes() {
         // frente, de costas quando passa por trás (aí aparece o verso).
         const giroCard = norm(a) * GIRO_CARD * monta; // graus
         definir(el, "visibility", "visible");
-        definir(el, "transform", `translate(-50%,-50%) translate3d(${f2(x)}px,${f2(y)}px,${f2(z)}px) rotateY(${f2(giroCard)}deg) rotateZ(${f2(giro * (1 - monta))}deg)`);
+        definir(el, "transform", `translate(-50%,-50%) translate3d(${f2(x)}px,${f2(y)}px,${f2(z)}px) rotateY(${f2(giroCard)}deg) rotateZ(${f2(giro * (1 - monta))}deg) scale(${mix(1, escalaDe(prof, s.cresce), monta).toFixed(4)})`);
 
         // Luz por card, em variáveis CSS que só mexem em opacidade: os de trás
         // escurecem até a cor do palco e o da frente acende nos últimos ~30°,
@@ -605,7 +664,7 @@ export function HeliceSolucoes() {
           cobre o topo): título em cima, projeto embaixo e o anel com a altura
           que sobrar. */}
       {/* Cabeçalho dentro do palco, logo acima do anel. */}
-      <div className="relative z-10 mx-auto flex w-full max-w-[1400px] shrink-0 flex-col gap-4 px-5 pt-8 sm:flex-row sm:items-end sm:justify-between sm:gap-6 md:px-10 md:pt-12">
+      <div ref={cabecalho} className="relative z-10 mx-auto flex w-full max-w-[1400px] shrink-0 flex-col gap-4 px-5 pt-8 sm:flex-row sm:items-end sm:justify-between sm:gap-6 md:px-10 md:pt-12">
         <div>
           <Label className="whitespace-nowrap text-paper/45">({String(n).padStart(2, "0")}) problema → solução</Label>
           <h2 className="mt-2 font-serif text-[clamp(2.5rem,5vw,4.5rem)] leading-[0.9]">
@@ -706,7 +765,7 @@ export function HeliceSolucoes() {
 
       {/* Projeto da frente, colado no anel. Paleta de areia sobre o marrom:
           caramelo no rótulo, creme no nome, areia na descrição, cobre no link. */}
-      <div className="relative z-10 mx-auto mt-6 grid w-full max-w-xl shrink-0 px-5 pb-8 text-center md:pb-10">
+      <div ref={rodape} className="relative z-10 mx-auto mt-6 grid w-full max-w-xl shrink-0 px-5 pb-8 text-center md:pb-10">
         {/* Cópias invisíveis dos cinco textos no mesmo lugar: o bloco fica com a
             altura do maior, então o palco — e o anel — não mudam de tamanho ao
             trocar de projeto, em nenhuma largura de tela. */}

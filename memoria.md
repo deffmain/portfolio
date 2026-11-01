@@ -115,6 +115,13 @@ qualquer sessão ou conta do Claude que trabalhar aqui. Complementa o
     inteiro os vizinhos paravam a 72°, quase de perfil, e a borda serrilhava
     (o Chrome não suaviza a borda de camada 3D tão inclinada). Borda
     transparente e desenhar a face maior não resolvem;
+  - **o card cresce conforme avança** (variação "Forte", escolhida em
+    /lab/crescer): 0,75× no fundo até 1,2× na frente (`ENCOLHE`/`CRESCE`), com
+    teto menor no celular (`LARGURA_MAX_FRENTE`). Cards base ~36% da largura
+    (380–580 px). `alturaDoAnel` mede os cantos de cada card ao longo da volta
+    (com escala, giro, inclinação e perspectiva) e o anel se centra no espaço
+    livre entre o título e o texto (refs `cabecalho`/`rodape`), com
+    `FOLGA_ANEL` de 20 px; em telas de ~900 px de altura, a altura é o limite;
   - **sem `filter` no voo do morph:** um `blur(2.5px)` na capa e no título
     derrubava a ida para ~30 fps (GPU). Sem ele, ~110 fps. As seções da home
     usam `.adiar-render` (`content-visibility` só durante a transição; ligado

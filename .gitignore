@@ -47,3 +47,6 @@ next-env.d.ts
 !/.claude/revisoes/LEIA-ME.md
 !/.claude/revisoes/MODELO-*.md
 /.claude/settings.local.json
+
+# imagens originais dos projetos (as versões do site ficam em content/capturas)
+/Imagens_dos_projetos/

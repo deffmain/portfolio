@@ -140,6 +140,10 @@ qualquer sessão ou conta do Claude que trabalhar aqui. Complementa o
   capturas reais, um projeto por vez.
   - O Cultiva já foi trocado. A captura ocupa o card inteiro e é a mesma URL
     no card e na capa, por causa do morph.
+  - Ele deixa a imagem escolhida de cada projeto em
+    `Imagens_dos_projetos/<Projeto>/`. Corte no centro para 16:10 e gere três
+    larguras em WebP (sem ampliar) em `content/capturas/`. Exemplo:
+    `cultiva-horta-{960,1280,1440}.webp`.
   - O Cultiva fica em `C:\Cultiva` (`docker compose up -d --build`, com o
     Docker Desktop aberto). A conta de demonstração local é
     `portfolio-demo@example.com`.

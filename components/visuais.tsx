@@ -1,21 +1,21 @@
 import type { StaticImageData } from "next/image";
 import type { Visual } from "@/content/perfil";
-import cultiva960 from "@/content/capturas/cultiva-planejador-960.webp";
-import cultiva1280 from "@/content/capturas/cultiva-planejador-1280.webp";
-import cultiva1920 from "@/content/capturas/cultiva-planejador-1920.webp";
+import cultiva960 from "@/content/capturas/cultiva-horta-960.webp";
+import cultiva1280 from "@/content/capturas/cultiva-horta-1280.webp";
+import cultiva1440 from "@/content/capturas/cultiva-horta-1440.webp";
 
 // Composições ilustrativas de cada solução, desenhadas em SVG com a paleta do
 // site. São esquemáticas de propósito (sem dados reais); as soluções que já têm
 // uma captura de tela da aplicação (abaixo) usam a captura no lugar.
 
-/** Capturas reais (16:10), em 960, 1280 e 1920 px de largura. Aparecem no card
- *  do anel e na capa do estudo de caso. */
+/** Capturas reais (16:10), em três larguras, da menor para a maior. Aparecem no
+ *  card do anel e na capa do estudo de caso. */
 const capturas: Partial<Record<Visual, { versoes: StaticImageData[]; alt: string; legenda: string }>> = {
-  // REVISAO[ADV-20261030-2152-05] info — a captura mostra "Início 30/10/2026" e "Dia 60 · 30 de out. de 2026" ao mesmo tempo → .claude/revisoes/2026-10-30-2152-adversarial.md
+  // REVISAO[ADV-20261030-2152-05] info — a captura mostra "Início 01/12/2026" e "Dia 160 · 01 de dez. de 2026" ao mesmo tempo → .claude/revisoes/2026-10-30-2152-adversarial.md
   cultiva: {
-    versoes: [cultiva960, cultiva1280, cultiva1920],
-    alt: "Planejador do Cultiva: canteiros de tomate, manjericão, pimentão, morango e milho, com o inspetor aberto num tomate em floração.",
-    legenda: "Captura do Cultiva rodando com uma horta de demonstração e clima real de Anápolis.",
+    versoes: [cultiva960, cultiva1280, cultiva1440],
+    alt: "O Cultiva num monitor, com o planejador da horta, e num celular, com as ferramentas e o painel de ambiente e clima, entre legumes ilustrados.",
+    legenda: "Telas reais do Cultiva no computador e no celular, com uma horta de demonstração e clima real de Anápolis.",
   },
 };
 

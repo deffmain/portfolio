@@ -177,9 +177,6 @@ qualquer sessão ou conta do Claude que trabalhar aqui. Complementa o
 
 ## Em andamento
 
-- **Transição "Camadas" (aplicada em 16/11/2026, ainda sem commit):** foi a
-  escolhida na 2ª rodada de `/lab/transicoes` (rota já apagada). Falta ele
-  conferir a fluidez no navegador dele e pedir o commit.
 - **Revisões:** os relatórios e as tarefas ficam em `.claude/revisoes/`, fora
   do git. A lista mais recente, `2026-10-30-2152-tarefas.md`, tem tarefas
   P1/P3 sobre as capturas do Cultiva. Há marcações `REVISAO[...]` abertas em

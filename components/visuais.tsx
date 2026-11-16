@@ -3,6 +3,9 @@ import type { Visual } from "@/content/perfil";
 import cultiva960 from "@/content/capturas/cultiva-horta-960.webp";
 import cultiva1280 from "@/content/capturas/cultiva-horta-1280.webp";
 import cultiva1440 from "@/content/capturas/cultiva-horta-1440.webp";
+import dashboard960 from "@/content/capturas/dashboard-suporte-960.webp";
+import dashboard1280 from "@/content/capturas/dashboard-suporte-1280.webp";
+import dashboard1440 from "@/content/capturas/dashboard-suporte-1440.webp";
 import viaja960 from "@/content/capturas/viaja-mais-960.webp";
 import viaja1280 from "@/content/capturas/viaja-mais-1280.webp";
 import viaja1440 from "@/content/capturas/viaja-mais-1440.webp";
@@ -19,6 +22,11 @@ const capturas: Partial<Record<Visual, { versoes: StaticImageData[]; alt: string
     versoes: [cultiva960, cultiva1280, cultiva1440],
     alt: "O Cultiva num monitor, com o planejador da horta, e num celular, com as ferramentas e o painel de ambiente e clima, entre legumes ilustrados.",
     legenda: "Telas reais do Cultiva no computador e no celular, com uma horta de demonstração e clima real de Anápolis.",
+  },
+  dashboard: {
+    versoes: [dashboard960, dashboard1280, dashboard1440],
+    alt: "O título “Suporte Inteligente — Dados estratégicos para o desenvolvimento do seu negócio” ao lado de um tablet com o painel de chamados: indicadores no topo, gráfico de status dos chamados e chamados por empresa.",
+    legenda: "Arte de apresentação do Dashboard de Suporte, com o painel de chamados num tablet.",
   },
   viaja: {
     versoes: [viaja960, viaja1280, viaja1440],

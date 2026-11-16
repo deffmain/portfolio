@@ -32,7 +32,10 @@ import { useEnquadrarAoChegar } from "@/lib/hooks";
 //
 // A seção é um palco escuro: o título fica logo acima do anel e o projeto da
 // frente logo abaixo. Os cards de trás escurecem até a cor do fundo e o da
-// frente acende (variáveis --escuro e --frente, que só mexem em opacidade).
+// frente acende: três elementos de luz por card (brilho da borda, véu escuro e
+// luz de cima), cada um com camada de composição própria, e só a opacidade
+// deles muda. Nada de variável CSS no card: ela é herdada, e mudá-la a cada
+// quadro recalculava o estilo de toda a ilustração dentro da face.
 //
 // Ao abrir um projeto o giro para, o card se alinha de frente e a navegação
 // começa na hora: três folhas coloridas sobem de baixo da tela e a página do
@@ -130,9 +133,13 @@ const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(mi
 const quantiza = (v: number, passo: number) => Math.round(v / passo) * passo;
 const f2 = (v: number) => Math.round(v * 100) / 100;
 
-/** Escreve uma propriedade de estilo só se o valor mudou desde a última vez. */
+/**
+ * Escreve uma propriedade de estilo só se o valor mudou desde a última vez.
+ * Só propriedades que não são herdadas pelos filhos do elemento: a escrita não
+ * pode obrigar o navegador a recalcular o estilo do que está dentro dele.
+ */
 const ultimos = new WeakMap<HTMLElement, Record<string, string>>();
-function definir(el: HTMLElement, prop: "transform" | "opacity" | "visibility" | "--escuro" | "--frente" | "--visivel", valor: string) {
+function definir(el: HTMLElement, prop: "transform" | "opacity" | "visibility", valor: string) {
   let c = ultimos.get(el);
   if (!c) ultimos.set(el, (c = {}));
   if (c[prop] === valor) return;
@@ -356,6 +363,10 @@ export function HeliceSolucoes() {
   const cards = useRef<(HTMLAnchorElement | null)[]>([]);
   const frentes = useRef<(HTMLSpanElement | null)[]>([]);
   const versos = useRef<(HTMLSpanElement | null)[]>([]);
+  // Os três elementos de luz de cada card: posicionar() escreve a opacidade deles.
+  const brilhos = useRef<(HTMLSpanElement | null)[]>([]); // brilho quente na borda
+  const veus = useRef<(HTMLSpanElement | null)[]>([]); // véu que escurece a face
+  const luzes = useRef<(HTMLSpanElement | null)[]>([]); // luz de cima com filete
   const reduce = useReducedMotion();
   const visivel = useInView(palco, { amount: 0.15 });
 
@@ -498,18 +509,26 @@ export function HeliceSolucoes() {
         definir(el, "visibility", "visible");
         definir(el, "transform", `translate(-50%,-50%) translate3d(${f2(x)}px,${f2(y)}px,${f2(z)}px) rotateY(${f2(giroDoCard)}deg) rotateZ(${f2(inclina)}deg) scale(${k.toFixed(4)})`);
 
-        // Luz por card, em variáveis CSS que só mexem em opacidade: os de trás
-        // escurecem até a cor do palco e o da frente acende nos últimos ~30°,
-        // com curva suave. `prof` é o cosseno do ângulo real do card (o mesmo
-        // de x e z), então o card do centro tem prof = 1.
-        const escuro = ((1 - prof) / 2) * 0.75;
-        const acende = suave(clamp((prof - 0.86) / 0.14, 0, 1));
-        const opacidadeTxt = String(f2(opacidade));
-        definir(el, "--escuro", quantiza(escuro, PASSO_LUZ).toFixed(2));
-        definir(el, "--frente", quantiza(acende, PASSO_LUZ).toFixed(2));
-        definir(el, "--visivel", opacidadeTxt);
+        // Luz por card: os de trás escurecem até a cor do palco e o da frente
+        // acende nos últimos ~30°, com curva suave. `prof` é o cosseno do ângulo
+        // real do card (o mesmo de x e z), então o card do centro tem prof = 1.
+        // A opacidade vai direto em cada elemento de luz, e não em variáveis
+        // CSS no card: a variável é herdada, e cada mudança recalcularia o
+        // estilo de toda a ilustração da face. Como os três têm camada
+        // própria, mudar a opacidade também não repinta a face.
+        const escuro = quantiza(((1 - prof) / 2) * 0.75, PASSO_LUZ);
+        const acende = quantiza(suave(clamp((prof - 0.86) / 0.14, 0, 1)), PASSO_LUZ);
+        const visivel = f2(opacidade); // opacidade do card na subida da entrada
+        const veu = veus.current[i];
+        const luz = luzes.current[i];
+        const brilho = brilhos.current[i];
+        if (veu) definir(veu, "opacity", escuro.toFixed(2));
+        if (luz) definir(luz, "opacity", acende.toFixed(2));
+        // O brilho fica fora das faces: some junto com o card na entrada.
+        if (brilho) definir(brilho, "opacity", (acende * visivel).toFixed(4));
         // Opacity no card achataria as faces num plano só (o verso deixaria de
         // existir), então fica em cada face.
+        const opacidadeTxt = String(visivel);
         for (const face of [frentes.current[i], versos.current[i]]) {
           if (face) definir(face, "opacity", opacidadeTxt);
         }
@@ -813,13 +832,21 @@ export function HeliceSolucoes() {
                 style={{ visibility: "hidden", transformStyle: "preserve-3d" }}
               >
                 {/* Destaque da frente: brilho quente que nasce na borda do card
-                    (só a opacidade muda por quadro; a sombra em si é fixa). */}
+                    (só a opacidade muda por quadro; a sombra em si é fixa).
+                    Os três elementos de luz nascem apagados, e posicionar()
+                    escreve a opacidade de cada um. O `will-change` dá a cada um
+                    a sua camada de composição: mudar a opacidade não repinta a
+                    face, que no celular é desenhada em 3×. */}
                 <span
+                  ref={(el) => {
+                    brilhos.current[i] = el;
+                  }}
                   aria-hidden
                   className="pointer-events-none absolute inset-0 rounded-xl backface-hidden"
                   style={{
                     boxShadow: "0 0 18px 1px rgb(236 140 98 / 0.4), 0 0 48px 6px rgb(224 118 79 / 0.14)",
-                    opacity: "calc(var(--frente, 0) * var(--visivel, 0))",
+                    opacity: 0,
+                    willChange: "opacity",
                     transform: "translateZ(-2px)",
                   }}
                 />
@@ -833,16 +860,27 @@ export function HeliceSolucoes() {
                 >
                   <VisualSolucao visual={s.visual} className="pointer-events-none block h-full w-full" />
                   {/* Escurece na cor do palco quanto mais para trás. */}
-                  <span aria-hidden className="pointer-events-none absolute inset-0" style={{ background: FUNDO, opacity: "var(--escuro, 0)" }} />
+                  <span
+                    ref={(el) => {
+                      veus.current[i] = el;
+                    }}
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0"
+                    style={{ background: FUNDO, opacity: 0, willChange: "opacity" }}
+                  />
                   {/* Luz de cima sobre a face e um filete de luz na borda. */}
                   <span
+                    ref={(el) => {
+                      luzes.current[i] = el;
+                    }}
                     aria-hidden
                     className="pointer-events-none absolute inset-0 rounded-xl"
                     style={{
                       background: "linear-gradient(180deg, rgb(255 236 214 / 0.28), transparent 45%)",
                       boxShadow: "inset 0 0 0 1.5px rgb(245 172 136 / 0.85)",
                       mixBlendMode: "soft-light",
-                      opacity: "var(--frente, 0)",
+                      opacity: 0,
+                      willChange: "opacity",
                     }}
                   />
                 </span>

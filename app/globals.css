@@ -101,9 +101,13 @@ body {
   display: none;
 }
 
-/* Transições home ⇄ estudo de caso (React <ViewTransition>).
-   Foco (na home, em JS) → voo: o card vira a capa e o título do painel vira o
-   h1 (classe .morph) → chegada: o resto da página sobe em cascata (.chegada). */
+/* Transições home ⇄ estudo de caso (React <ViewTransition>): "Camadas".
+   Ida (tipo abrir-projeto): a home fica parada e três folhas — ferrugem, terra
+   e areia — sobem de baixo da tela, uma atrás da outra; a página do projeto é
+   a última folha. Volta (voltar-projeto): o caminho inverso — a página desce
+   primeiro e as folhas descem atrás dela, até sobrar o carrossel.
+   As folhas são elementos vazios da página do projeto; a cor é pintada aqui,
+   no grupo da transição, e por isso só existe enquanto ela dura. */
 ::view-transition {
   pointer-events: none;
 }
@@ -119,24 +123,147 @@ body {
   animation: none;
 }
 
-/* Sai devagar e pousa macio (ease-in-out suave). Sem filter no voo: um blur
-   na capa grande e no título derrubava a ida para ~30 fps (custo de GPU). */
+/* Título do projeto entre um estudo de caso e o próximo ("Próxima solução"). */
 ::view-transition-group(.morph) {
   animation-duration: 540ms;
   animation-timing-function: cubic-bezier(0.45, 0, 0.2, 1);
   z-index: 50;
 }
 
-::view-transition-old(.home-sai),
-::view-transition-old(.caso-sai) {
-  animation: 150ms ease-out both vt-sai;
+@keyframes folha-sobe {
+  from {
+    translate: 0 100vh;
+  }
 }
-/* Sem atraso: a página nova aparece enquanto a antiga some (crossfade), para
-   nunca sobrar só a capa voando sobre o fundo vazio. A cascata .chegada da
-   página do projeto tem seus próprios atrasos. */
-::view-transition-new(.caso-entra),
-::view-transition-new(.home-entra) {
-  animation: 300ms ease-out both vt-entra;
+@keyframes folha-desce {
+  to {
+    translate: 0 100vh;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Cada folha leva 500 ms e sai 70 ms depois da anterior: 710 ms ao todo. */
+  ::view-transition-group(.folha-sobe-1),
+  ::view-transition-group(.folha-sobe-2),
+  ::view-transition-group(.folha-sobe-3),
+  ::view-transition-group(.caso-entra) {
+    animation: 500ms cubic-bezier(0.76, 0, 0.24, 1) both folha-sobe;
+  }
+  ::view-transition-group(.folha-desce-1),
+  ::view-transition-group(.folha-desce-2),
+  ::view-transition-group(.folha-desce-3),
+  ::view-transition-group(.caso-sai) {
+    animation: 500ms cubic-bezier(0.76, 0, 0.24, 1) both folha-desce;
+  }
+
+  ::view-transition-group(.folha-sobe-1),
+  ::view-transition-group(.folha-desce-1) {
+    background: #b4441f;
+    z-index: 1;
+  }
+  ::view-transition-group(.folha-sobe-2),
+  ::view-transition-group(.folha-desce-2) {
+    background: #3a2a20;
+    z-index: 2;
+  }
+  ::view-transition-group(.folha-sobe-3),
+  ::view-transition-group(.folha-desce-3) {
+    background: #d4bea3;
+    z-index: 3;
+  }
+  /* A página não tem fundo próprio (o papel é do body): sem pintar o grupo,
+     as folhas apareceriam através dela. */
+  ::view-transition-group(.caso-entra),
+  ::view-transition-group(.caso-sai) {
+    background: var(--paper);
+    z-index: 4;
+  }
+
+  /* Ida: 1ª, 2ª e 3ª folhas e, por último, a página. */
+  ::view-transition-group(.folha-sobe-2) {
+    animation-delay: 70ms;
+  }
+  ::view-transition-group(.folha-sobe-3) {
+    animation-delay: 140ms;
+  }
+  ::view-transition-group(.caso-entra) {
+    animation-delay: 210ms;
+  }
+  /* Volta: a página, depois a 3ª, a 2ª e a 1ª folhas. */
+  ::view-transition-group(.folha-desce-3) {
+    animation-delay: 70ms;
+  }
+  ::view-transition-group(.folha-desce-2) {
+    animation-delay: 140ms;
+  }
+  ::view-transition-group(.folha-desce-1) {
+    animation-delay: 210ms;
+  }
+
+  /* Sem fade: quem está embaixo (a home) fica inteiro e parado até ser
+     coberto na ida, e já está lá quando as folhas descem na volta; a página
+     do projeto anda opaca. */
+  ::view-transition-old(.home-sai),
+  ::view-transition-new(.home-entra),
+  ::view-transition-new(.caso-entra),
+  ::view-transition-old(.caso-sai) {
+    animation: none;
+  }
+
+  /* O cabeçalho do projeto anda junto com a página. Na volta, o da home só
+     aparece depois (ele fica recolhido sobre o carrossel). */
+  :root:active-view-transition-type(abrir-projeto)::view-transition-new(site-header) {
+    animation: 500ms cubic-bezier(0.76, 0, 0.24, 1) 210ms both folha-sobe;
+  }
+  /* O grupo iria direto para o lugar do cabeçalho da home (recolhido, 64px
+     acima da tela) e levaria junto o cabeçalho que desce: fica no topo. Sem o
+     desfoque de fundo do cabeçalho da home, que o navegador aplica no grupo
+     (sem !important a regra do navegador ganha). */
+  :root:active-view-transition-type(voltar-projeto)::view-transition-group(site-header) {
+    transform: none !important;
+    backdrop-filter: none !important;
+  }
+  :root:active-view-transition-type(voltar-projeto)::view-transition-old(site-header) {
+    display: block;
+    animation: 500ms cubic-bezier(0.76, 0, 0.24, 1) both folha-desce;
+  }
+  :root:active-view-transition-type(voltar-projeto)::view-transition-new(site-header) {
+    display: none;
+  }
+}
+
+/* Chegada: o que não é título nem capa sobe 16px com fade, em cascata, quando
+   a página está quase no lugar (ela pousa aos 710 ms; tudo assenta em ~1,05 s). */
+@keyframes chegada {
+  from {
+    opacity: 0;
+    translate: 0 16px;
+  }
+}
+.chegada {
+  animation: chegada 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(400ms + var(--d, 0) * 50ms);
+}
+
+/* Movimento reduzido: sem folhas (ficam transparentes), só um crossfade rápido. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+  }
+  ::view-transition-image-pair(*) {
+    animation: none !important;
+  }
+  ::view-transition-old(.home-sai),
+  ::view-transition-old(.caso-sai) {
+    animation: 150ms ease-out both vt-sai;
+  }
+  ::view-transition-new(.caso-entra),
+  ::view-transition-new(.home-entra) {
+    animation: 150ms ease-out both vt-entra;
+  }
+  .chegada {
+    animation: none;
+  }
 }
 @keyframes vt-sai {
   to {
@@ -146,37 +273,6 @@ body {
 @keyframes vt-entra {
   from {
     opacity: 0;
-  }
-}
-
-/* Chegada: sobe 20px com fade, em cascata; começa enquanto a capa termina de
-   pousar (o morph dura 540 ms). */
-@keyframes chegada {
-  from {
-    opacity: 0;
-    translate: 0 20px;
-  }
-}
-.chegada {
-  animation: chegada 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: calc(300ms + var(--d, 0) * 70ms);
-}
-
-/* Movimento reduzido: sem voo, só um crossfade rápido. */
-@media (prefers-reduced-motion: reduce) {
-  ::view-transition-group(*) {
-    animation-duration: 0s !important;
-  }
-  ::view-transition-image-pair(*) {
-    animation: none !important;
-  }
-  ::view-transition-old(*),
-  ::view-transition-new(*) {
-    animation-duration: 150ms !important;
-    animation-delay: 0s !important;
-  }
-  .chegada {
-    animation: none;
   }
 }
 

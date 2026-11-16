@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  ViewTransition,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -35,9 +34,10 @@ import { useEnquadrarAoChegar } from "@/lib/hooks";
 // frente logo abaixo. Os cards de trás escurecem até a cor do fundo e o da
 // frente acende (variáveis --escuro e --frente, que só mexem em opacidade).
 //
-// Ao abrir um projeto: (1) foco — o giro para, o card se alinha de frente e os
-// outros recuam em cascata; (2) voo — a frente do card vira a capa do estudo de
-// caso (<ViewTransition name="capa-…">); (3) chegada — o resto da página sobe.
+// Ao abrir um projeto o giro para, o card se alinha de frente e a navegação
+// começa na hora: três folhas coloridas sobem de baixo da tela e a página do
+// estudo de caso sobe por último (transição "Camadas", em globals.css). O anel
+// fica parado embaixo até ser coberto. Na volta, o caminho inverso.
 
 const N = solucoes.length; // um card por projeto
 const CARDS = Array.from({ length: N }, (_, i) => i);
@@ -66,12 +66,9 @@ const INCLINACAO = -7; // graus: os cards de trás aparecem um pouco acima
 // Palco escuro (tom "Terra"): os cards de trás escurecem até a cor do fundo.
 const FUNDO = "#1f1915";
 const LUZ_PALCO = "rgb(224 118 79 / 0.09)";
-const FOCO_MS = 280;
-const RESERVA_MS = 4000; // sem navegação até aqui, abrir() desiste do morph e recarrega
-const RECUO_MS = 200; // cada card que não foi clicado recua e some nesse tempo…
-const RECUO_PASSO_MS = 40; // …começando pelos vizinhos, um passo depois do outro
+const RESERVA_MS = 4000; // sem navegação até aqui, abrir() desiste da transição e recarrega
 const ENTRADA_MS = 3300; // quando o último card termina de montar
-const PAUSA_VOLTA_MS = 900; // o voo da volta dura 540 ms; o card não pode andar antes de a capa pousar
+const PAUSA_VOLTA_MS = 900; // a volta dura 710 ms; o anel não pode andar antes de as folhas descerem
 // Fração do ângulo do anel que o card gira em torno de si. Com o ângulo inteiro,
 // os vizinhos da frente param a 72°, quase de perfil: viram uma lâmina de ~20 px
 // cuja borda o Chrome não suaviza (serrilha, e na volta de um projeto o anel
@@ -127,11 +124,6 @@ function definir(el: HTMLElement, prop: "transform" | "opacity" | "visibility" |
 }
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
 const suave = (t: number) => t * t * (3 - 2 * t);
-/** Distância entre dois cards no anel (1 = vizinho). */
-const distancia = (i: number, j: number) => {
-  const d = Math.abs(i - j) % N;
-  return Math.min(d, N - d);
-};
 /** Quantos cards de `de` até `ate`, pelo caminho mais curto (com sinal). */
 const passosAte = (de: number, ate: number) => {
   const d = (((ate - de) % N) + N) % N;
@@ -254,8 +246,8 @@ type Estado = {
   giroAcum: number[]; // ângulo de cada card sem dar a volta em ±180° (NaN = ainda não medido)
   anguloAntes: number[]; // ângulo de cada card no quadro anterior
   nuvem: { espalha: number; giro: number }[];
-  foco: { card: number; t0: number } | null; // t0 = -1 até o laço carimbar o início
-  pausa: number; // ms sem giro automático (enquanto a capa pousa de volta no anel)
+  foco: { card: number } | null; // abrindo um projeto: o giro para e o card se alinha
+  pausa: number; // ms sem giro automático (enquanto as folhas da volta descem)
 };
 
 /**
@@ -271,7 +263,7 @@ function limitarAtraso(s: Estado) {
  * Leva o giro do usuário (yaw) até o alvo com velocidade e aceleração
  * limitadas: acelera até VEL_MAX, mantém, e freia a tempo de parar no alvo.
  * No foco (abrindo um projeto) usa a aproximação rápida, para o card se
- * alinhar nos 350 ms da etapa.
+ * alinhar antes de as folhas da transição o cobrirem.
  */
 function girarAteAlvo(s: Estado, dt: number, livre: boolean) {
   if (s.foco) {
@@ -351,21 +343,17 @@ export function HeliceSolucoes() {
   const visivel = useInView(palco, { amount: 0.15 });
 
   // Voltando de um projeto numa montagem nova, o anel já nasce formado com ele
-  // na frente (o morph da volta precisa disso no primeiro render). Na
+  // na frente (é o que aparece quando as folhas da volta descem). Na
   // hidratação vale o valor do servidor (nenhum), e o efeito de volta assume.
   const volta = useSyncExternalStore(semInscricao, lerVolta, () => null);
   const [estado0] = useState(() => estadoInicial(volta));
   const st = useRef(estado0);
   const frente = useRef(volta ?? 0); // card mais à frente
   const destino = useRef<number | null>(null); // card que as setas mandaram para a frente
-  const formadoRef = useRef(volta !== null);
   const ponteiro = useRef<{ id: number; x0: number; y0: number; x: number; t: number; tReal: number; moveu: boolean } | null>(null);
   // Religa o laço de animação quando ele dorme (movimento reduzido, anel parado).
   const acordar = useRef(() => {});
   const [ativo, setAtivo] = useState(volta ?? 0);
-  // A capa só ganha nome de transição com o anel montado (no meio da entrada
-  // não há card "da frente" para virar capa).
-  const [formado, setFormado] = useState(volta !== null);
   useEnquadrarAoChegar(secao);
 
   const medir = useCallback(() => {
@@ -395,7 +383,7 @@ export function HeliceSolucoes() {
 
   /** Recalcula e aplica o transform de todos os cards. */
   const posicionar = useCallback(
-    (agora = performance.now()) => {
+    () => {
       const s = st.current;
       if (!s.w) return;
       const raio = raioDe(s.largura);
@@ -420,15 +408,8 @@ export function HeliceSolucoes() {
         const { espalha, giro } = s.nuvem[i] ?? { espalha: 0, giro: 0 };
         const x = mix(espalha * s.w * 0.85, Math.sin(rad) * raio, monta);
         const y = mix(s.h * 0.85 + i * 12, mix((i - (N - 1) / 2) * 27, 0, monta), ergue);
-        let z = mix(-220, prof * raio, monta);
-        let opacidade = clamp(sobe * 3, 0, 1);
-
-        // Foco: os outros recuam e somem, a partir dos vizinhos.
-        if (s.foco && s.foco.t0 >= 0 && i !== s.foco.card) {
-          const p = suave(clamp((agora - s.foco.t0 - (distancia(i, s.foco.card) - 1) * RECUO_PASSO_MS) / RECUO_MS, 0, 1));
-          z -= 200 * p;
-          opacidade *= 1 - p;
-        }
+        const z = mix(-220, prof * raio, monta);
+        const opacidade = clamp(sobe * 3, 0, 1);
 
         // Ângulo contínuo: anda junto com o anel e não dá a volta em ±180°
         // sozinho (ver TROCA_MAX). Um salto grande (volta de um projeto) recomeça.
@@ -529,7 +510,6 @@ export function HeliceSolucoes() {
       s.angulo = 0;
       s.yaw = s.alvoYaw = -k * PASSO;
       destino.current = null;
-      formadoRef.current = true;
       frente.current = -1; // força posicionar() a publicar o card da frente
       // Seção enquadrada na tela inteira (o cabeçalho recolhe), como na chegada rolando.
       const sec = secao.current;
@@ -568,7 +548,6 @@ export function HeliceSolucoes() {
       ultimo = agora;
       if (!document.hidden) {
         s.voo += dt;
-        if (s.foco && s.foco.t0 < 0) s.foco.t0 = agora;
         const livre = !s.arrastando && !s.foco;
         if (s.pausa > 0) s.pausa -= dt;
         else if (!reduce && livre) s.angulo -= dt * GIRO_AUTO;
@@ -576,12 +555,8 @@ export function HeliceSolucoes() {
         // Anel parado (movimento reduzido, pausa da volta): nada a recalcular.
         const chave = s.angulo + s.yaw;
         const animando = s.voo < ENTRADA_MS + 100 || s.foco !== null;
-        if (animando || chave !== ultimaChave) posicionar(agora);
+        if (animando || chave !== ultimaChave) posicionar();
         ultimaChave = chave;
-        if (!formadoRef.current && s.voo >= ENTRADA_MS) {
-          formadoRef.current = true;
-          setFormado(true);
-        }
         const parado = reduce && !animando && !s.arrastando && s.pausa <= 0 && s.inercia === 0 && s.velYaw === 0 && s.yaw === s.alvoYaw;
         if (parado) {
           raf = 0;
@@ -662,22 +637,15 @@ export function HeliceSolucoes() {
     }, RESERVA_MS);
   };
 
-  /** Abre o estudo de caso: foco (350 ms na home) e depois navega com o morph. */
+  /** Abre o estudo de caso: o anel para, o card se alinha e a navegação começa na hora. */
   const abrir = (card: number) => {
     const s = st.current;
     if (s.foco) return;
-    const url = `/solucoes/${solucoes[card].slug}`;
-    if (reduce) {
-      navegar(url);
-      return;
+    if (!reduce) {
+      trazerParaFrente(card);
+      s.foco = { card };
     }
-    trazerParaFrente(card);
-    s.foco = { card, t0: -1 };
-    window.setTimeout(() => {
-      s.yaw = s.alvoYaw; // alinhamento exato: rotateY(0) no card clicado
-      posicionar();
-      navegar(url);
-    }, FOCO_MS);
+    navegar(`/solucoes/${solucoes[card].slug}`);
   };
 
   const onKey = (e: KeyboardEvent) => {
@@ -747,7 +715,6 @@ export function HeliceSolucoes() {
 
   const n = solucoes.length;
   const sol = solucoes[ativo];
-  const animar = !reduce; // com movimento reduzido: sem foco e sem voo, só crossfade
 
   return (
     <section
@@ -805,7 +772,7 @@ export function HeliceSolucoes() {
                 href={`/solucoes/${s.slug}`}
                 draggable={false}
                 // Conteúdo completo do projeto antes do clique (a página é
-                // estática): o morph não espera a rede.
+                // estática): a transição não espera a rede.
                 prefetch={true}
                 aria-label={`${s.nome} — abrir estudo de caso`}
                 onClick={(e) => onCardClick(e, i)}
@@ -824,34 +791,29 @@ export function HeliceSolucoes() {
                     transform: "translateZ(-2px)",
                   }}
                 />
-                {/* Frente: vira a capa no estudo de caso. Todo card fica sempre
-                    dentro do mesmo <ViewTransition> e só o nome muda: o da
-                    frente se chama capa-…; os outros ficam sem nome e somem e
-                    aparecem junto com a home. */}
-                <ViewTransition name={animar && formado && i === ativo ? `capa-${s.slug}` : "auto"} share="morph" default="none">
+                {/* Frente: a ilustração ou a captura do projeto. */}
+                <span
+                  ref={(el) => {
+                    frentes.current[i] = el;
+                  }}
+                  className="absolute top-0 left-0 block aspect-[16/10] overflow-hidden rounded-xl border border-paper/10 bg-paper-2 shadow-[0_30px_60px_-25px_rgb(0_0_0/0.8)] backface-hidden"
+                  style={NITIDA}
+                >
+                  <VisualSolucao visual={s.visual} className="pointer-events-none block h-full w-full" />
+                  {/* Escurece na cor do palco quanto mais para trás. */}
+                  <span aria-hidden className="pointer-events-none absolute inset-0" style={{ background: FUNDO, opacity: "var(--escuro, 0)" }} />
+                  {/* Luz de cima sobre a face e um filete de luz na borda. */}
                   <span
-                    ref={(el) => {
-                      frentes.current[i] = el;
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0 rounded-xl"
+                    style={{
+                      background: "linear-gradient(180deg, rgb(255 236 214 / 0.28), transparent 45%)",
+                      boxShadow: "inset 0 0 0 1.5px rgb(245 172 136 / 0.85)",
+                      mixBlendMode: "soft-light",
+                      opacity: "var(--frente, 0)",
                     }}
-                    className="absolute top-0 left-0 block aspect-[16/10] overflow-hidden rounded-xl border border-paper/10 bg-paper-2 shadow-[0_30px_60px_-25px_rgb(0_0_0/0.8)] backface-hidden"
-                    style={NITIDA}
-                  >
-                    <VisualSolucao visual={s.visual} className="pointer-events-none block h-full w-full" />
-                    {/* Escurece na cor do palco quanto mais para trás. */}
-                    <span aria-hidden className="pointer-events-none absolute inset-0" style={{ background: FUNDO, opacity: "var(--escuro, 0)" }} />
-                    {/* Luz de cima sobre a face e um filete de luz na borda. */}
-                    <span
-                      aria-hidden
-                      className="pointer-events-none absolute inset-0 rounded-xl"
-                      style={{
-                        background: "linear-gradient(180deg, rgb(255 236 214 / 0.28), transparent 45%)",
-                        boxShadow: "inset 0 0 0 1.5px rgb(245 172 136 / 0.85)",
-                        mixBlendMode: "soft-light",
-                        opacity: "var(--frente, 0)",
-                      }}
-                    />
-                  </span>
-                </ViewTransition>
+                  />
+                </span>
                 {/* Verso: já virado 180°, lê direito quando o card está de costas. */}
                 <span
                   ref={(el) => {
@@ -906,13 +868,7 @@ export function HeliceSolucoes() {
           >
             <Label className="text-[#c49a74]">{sol.contexto}</Label>
             <h3 className={`${CL_NOME} text-[#f3e3cc]`}>
-              {animar ? (
-                <ViewTransition name={`titulo-${sol.slug}`} share="morph" default="none">
-                  <span className="inline-block">{sol.nome}</span>
-                </ViewTransition>
-              ) : (
-                <span className="inline-block">{sol.nome}</span>
-              )}
+              <span className="inline-block">{sol.nome}</span>
             </h3>
             <p className={`${CL_DESCRICAO} text-[#d4bea3]`}>{sol.problemaCurto}</p>
             <Link

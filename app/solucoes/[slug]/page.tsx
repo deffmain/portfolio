@@ -36,6 +36,9 @@ const atraso = (d: number) => ({ "--d": d }) as React.CSSProperties;
 // conteúdo depende de params e fica dentro do <Suspense>. Como as cinco páginas
 // são geradas no build, o <Link prefetch> do carrossel traz esse conteúdo
 // pronto do cache estático, e o clique não espera a rede.
+
+// Folhas da transição "Camadas" (globals.css): ferrugem, terra e areia.
+const FOLHAS = [1, 2, 3];
 export default function SolucaoPage({ params }: PageProps<"/solucoes/[slug]">) {
   return (
     <>
@@ -58,7 +61,21 @@ async function Caso({ params }: Pick<PageProps<"/solucoes/[slug]">, "params">) {
 
   return (
     <>
-      {/* Entrada/saída da página nas transições home ⇄ estudo de caso */}
+      {/* Transição "Camadas": vindo do carrossel, três folhas sobem de baixo da
+          tela e a página sobe por último; na volta, o caminho inverso. As
+          folhas são transparentes na página — a cor é pintada só durante a
+          transição, pelo CSS. */}
+      {FOLHAS.map((n) => (
+        <ViewTransition
+          key={n}
+          enter={{ "abrir-projeto": `folha-sobe-${n}`, default: "none" }}
+          exit={{ "voltar-projeto": `folha-desce-${n}`, default: "none" }}
+          default="none"
+        >
+          <div aria-hidden className="pointer-events-none fixed inset-0" />
+        </ViewTransition>
+      ))}
+      {/* A página: a última folha a subir e a primeira a descer. */}
       <ViewTransition
         enter={{ "abrir-projeto": "caso-entra", default: "none" }}
         exit={{ "voltar-projeto": "caso-sai", default: "none" }}
@@ -83,14 +100,11 @@ async function Caso({ params }: Pick<PageProps<"/solucoes/[slug]">, "params">) {
             </ViewTransition>
           </h1>
 
-          {/* Capa: o card da frente do anel pousa aqui (morph capa-…). Sem Reveal:
-              o morph já é a entrada. */}
+          {/* Capa. Sem Reveal: ela e o título já chegam prontos, subindo com a página. */}
           <div className="mt-8 rounded-2xl border border-line bg-paper-2 px-4 py-6 md:mt-12 md:px-16 md:py-12">
-            <ViewTransition name={`capa-${s.slug}`} share="morph" default="none">
-              <div className="mx-auto max-w-4xl overflow-hidden rounded-xl border border-line bg-paper-2 shadow-[0_24px_50px_-18px_rgb(20_20_19/0.45)]">
-                <VisualSolucao visual={s.visual} className="block aspect-[16/10] h-auto w-full" destaque />
-              </div>
-            </ViewTransition>
+            <div className="mx-auto max-w-4xl overflow-hidden rounded-xl border border-line bg-paper-2 shadow-[0_24px_50px_-18px_rgb(20_20_19/0.45)]">
+              <VisualSolucao visual={s.visual} className="block aspect-[16/10] h-auto w-full" destaque />
+            </div>
           </div>
           <p className="chegada mt-3 font-mono text-[11px] text-muted" style={atraso(1)}>
             {legendaVisual(s.visual)}

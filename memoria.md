@@ -133,6 +133,24 @@ qualquer sessão ou conta do Claude que trabalhar aqui. Complementa o
     usam `.adiar-render` (`content-visibility` só durante a transição; ligado
     sempre, as âncoras do menu erram no celular). Meça fluidez no build de
     produção: o `next dev` deixa a transição ~2× mais lenta.
+- **Transição carrossel ⇄ estudo de caso: "Camadas"** (regras em
+  `app/globals.css`, folhas em `app/solucoes/[slug]/page.tsx`):
+  - ida: a home fica parada e três folhas (ferrugem `#b4441f`, terra
+    `#3a2a20`, areia `#d4bea3`) sobem de baixo da tela, 500 ms cada, 70 ms
+    uma atrás da outra; a página do projeto é a última folha (pousa aos
+    710 ms, tudo assenta em ~1,05 s). Volta: o caminho inverso;
+  - o clique navega na hora: não há mais a etapa de foco nem o morph da capa
+    e do título entre a home e o projeto (o morph do título continua só em
+    "Próxima solução", de um projeto para outro);
+  - as folhas são `<div>` vazias com `<ViewTransition>`; a cor é pintada no
+    `::view-transition-group`, então só existe durante a transição. A página
+    não tem fundo próprio: o grupo dela também é pintado (papel), senão as
+    folhas aparecem através dela;
+  - na volta, o grupo do cabeçalho recebe do navegador o `backdrop-filter` do
+    cabeçalho da home; só `!important` tira;
+  - para conferir, use velocidade normal: com
+    `Animation.setPlaybackRate` reduzido os prints mostram o anel espalhado,
+    o que não acontece de verdade (o DOM fica formado).
 - **Seção "IA no processo":** campo de tokens interativo
   (`components/campo-tokens.tsx`). Perto de um passo, o campo se acalma e o
   passo ganha destaque.
@@ -153,23 +171,15 @@ qualquer sessão ou conta do Claude que trabalhar aqui. Complementa o
   - as primeiras ideias para "impressionar" o carrossel: nome gigante, brilho,
     reflexo e afins;
   - as seis primeiras propostas de transição: morph, mergulho, íris,
-    persianas, virar e título.
+    persianas, virar e título;
+  - da 2ª rodada, ficaram de fora: "O card se abre", "Blocos",
+    "Decodificação" e "Película".
 
 ## Em andamento
 
-- **Transição do carrossel para o estudo de caso:**
-  - **Problema medido:** cerca de 2 s até a página assentar. Somam-se o foco
-    de 350 ms, a busca do conteúdo depois do clique (o `router.prefetch` só
-    traz o App Shell com `partialPrefetching`; só um
-    `<Link prefetch={true}>` traz o conteúdo por URL), o voo de 560 ms e a
-    cascata de chegada (480 ms + 90 ms por bloco).
-  - **Correção:** já existe um prompt pronto com o diagnóstico e a meta de
-    ≤ 1,1 s. O usuário quis ver novas transições antes de aplicar.
-  - **2ª rodada de propostas** em `/lab/transicoes`
-    (`components/lab-transicoes.tsx`): "O card se abre", "Camadas", "Blocos",
-    "Decodificação" e "Película". Ele ainda não escolheu. Depois da escolha,
-    junte o efeito com a correção de velocidade num prompt só e apague a rota
-    de teste.
+- **Transição "Camadas" (aplicada em 16/11/2026, ainda sem commit):** foi a
+  escolhida na 2ª rodada de `/lab/transicoes` (rota já apagada). Falta ele
+  conferir a fluidez no navegador dele e pedir o commit.
 - **Revisões:** os relatórios e as tarefas ficam em `.claude/revisoes/`, fora
   do git. A lista mais recente, `2026-10-30-2152-tarefas.md`, tem tarefas
   P1/P3 sobre as capturas do Cultiva. Há marcações `REVISAO[...]` abertas em

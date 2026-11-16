@@ -67,7 +67,24 @@ const INCLINACAO = -7; // graus: os cards de trás aparecem um pouco acima
 const FUNDO = "#1f1915";
 const LUZ_PALCO = "rgb(224 118 79 / 0.09)";
 const RESERVA_MS = 4000; // sem navegação até aqui, abrir() desiste da transição e recarrega
-const ENTRADA_MS = 3300; // quando o último card termina de montar
+// Entrada em três etapas, igual em todo carregamento, sem card atravessar card:
+// 1. os cards sobem do chão do palco numa pilha, todos no mesmo plano e
+//    inclinados, um logo atrás do outro (38 ms). No mesmo plano eles podem se
+//    sobrepor na tela, mas não se cortam;
+// 2. ainda no mesmo plano, a pilha se abre numa fileira reta e os cards se
+//    endireitam. Cada card já está na pilha na ordem da fileira, e o passo da
+//    fileira (1,26 × raio) é maior que o card: ao fim ninguém se sobrepõe;
+// 3. a fileira se enrola em anel: um arco que vai fechando até o raio do anel,
+//    com os cards girando e ganhando a escala de cada posição. No caminho os
+//    vizinhos estão sempre mais afastados do que no anel pronto.
+const PILHA_PASSO = 0.17; // distância entre os cards na pilha, em larguras do palco
+const PILHA_INCLINA = [-14, 9, -5, 12, -8]; // graus: inclinação de cada card na pilha
+const PILHA_Z = -220; // plano em que a pilha sobe e a fileira se abre
+const ABRE_INICIO_MS = 950; // etapa 2
+const ABRE_MS = 700;
+const ENROLA_INICIO_MS = 1650; // etapa 3
+const ENROLA_MS = 1400;
+const ENTRADA_MS = ENROLA_INICIO_MS + ENROLA_MS; // quando o anel termina de se formar (3050 ms)
 const PAUSA_VOLTA_MS = 900; // a volta dura 710 ms; o anel não pode andar antes de as folhas descerem
 // Fração do ângulo do anel que o card gira em torno de si. Com o ângulo inteiro,
 // os vizinhos da frente param a 72°, quase de perfil: viram uma lâmina de ~20 px
@@ -129,6 +146,8 @@ const passosAte = (de: number, ate: number) => {
   const d = (((ate - de) % N) + N) % N;
   return d > N / 2 ? d - N : d;
 };
+/** Lugar do card i na pilha da entrada, na ordem em que ele fica na fileira (-2 a 2 com 5 cards). */
+const lugarNaPilha = (i: number) => Math.round(norm(i * PASSO) / PASSO);
 /** Raio só o bastante para os vizinhos não se sobreporem. */
 const raioDe = (largura: number) => largura * 1.12;
 const FOLGA_ANEL = 20; // px livres entre o anel e o título (em cima) e o texto (embaixo)
@@ -245,7 +264,6 @@ type Estado = {
   centro: number; // quanto o anel sobe (translateY), de medir()
   giroAcum: number[]; // ângulo de cada card sem dar a volta em ±180° (NaN = ainda não medido)
   anguloAntes: number[]; // ângulo de cada card no quadro anterior
-  nuvem: { espalha: number; giro: number }[];
   foco: { card: number } | null; // abrindo um projeto: o giro para e o card se alinha
   pausa: number; // ms sem giro automático (enquanto as folhas da volta descem)
 };
@@ -323,7 +341,6 @@ function estadoInicial(volta: number | null): Estado {
     centro: 0,
     giroAcum: Array.from({ length: N }, () => NaN),
     anguloAntes: Array.from({ length: N }, () => NaN),
-    nuvem: [],
     foco: null,
     pausa: volta === null ? 0 : PAUSA_VOLTA_MS,
   };
@@ -390,9 +407,14 @@ export function HeliceSolucoes() {
       const giroCard = giroDe(s.w);
       const voo = Math.max(0, s.voo);
       const semEntrada = !!reduce;
+      // Etapas 2 e 3 da entrada, no mesmo tempo para todos os cards: quanto a
+      // pilha já se abriu em fileira e quanto a fileira já se enrolou em anel.
+      const abre = semEntrada ? 1 : suave(clamp((voo - ABRE_INICIO_MS) / ABRE_MS, 0, 1));
+      const enrola = semEntrada ? 1 : suave(clamp((voo - ENROLA_INICIO_MS) / ENROLA_MS, 0, 1));
+      const formado = enrola === 1;
 
       // 1ª passada: posição, escala e ângulo contínuo de cada card.
-      const dados: ({ el: HTMLAnchorElement; n: number; passo: number; prof: number; monta: number; x: number; y: number; z: number; k: number; giro: number; opacidade: number } | undefined)[] = [];
+      const dados: ({ el: HTMLAnchorElement; n: number; passo: number; prof: number; x: number; y: number; z: number; k: number; inclina: number; opacidade: number } | undefined)[] = [];
       let melhor = -2;
       let idx = 0;
       for (let i = 0; i < N; i++) {
@@ -401,15 +423,6 @@ export function HeliceSolucoes() {
         const a = i * PASSO + s.angulo + s.yaw;
         const rad = (a * Math.PI) / 180;
         const prof = Math.cos(rad);
-        const t = voo - i * 38;
-        const sobe = semEntrada ? 1 : clamp(t / 1400, 0, 1);
-        const monta = semEntrada ? 1 : suave(clamp((t - 950) / 1900, 0, 1));
-        const ergue = 1 - Math.pow(1 - sobe, 3);
-        const { espalha, giro } = s.nuvem[i] ?? { espalha: 0, giro: 0 };
-        const x = mix(espalha * s.w * 0.85, Math.sin(rad) * raio, monta);
-        const y = mix(s.h * 0.85 + i * 12, mix((i - (N - 1) / 2) * 27, 0, monta), ergue);
-        const z = mix(-220, prof * raio, monta);
-        const opacidade = clamp(sobe * 3, 0, 1);
 
         // Ângulo contínuo: anda junto com o anel e não dá a volta em ±180°
         // sozinho (ver TROCA_MAX). Um salto grande (volta de um projeto) recomeça.
@@ -420,7 +433,27 @@ export function HeliceSolucoes() {
         if (Math.abs(s.giroAcum[i]) > TROCA_MAX) s.giroAcum[i] = n;
         s.anguloAntes[i] = a;
 
-        dados[i] = { el, n, passo: Number.isFinite(passo) ? passo : 0, prof, monta, x, y, z, k: mix(1, escalaDe(prof, s.cresce), monta), giro, opacidade };
+        // Etapa 1: a subida de cada card, 38 ms atrás do anterior.
+        const sobe = semEntrada ? 1 : clamp((voo - i * 38) / 1400, 0, 1);
+        const ergue = 1 - Math.pow(1 - sobe, 3);
+        const opacidade = clamp(sobe * 3, 0, 1);
+        const y = mix(s.h * 0.85 + i * 12, mix((i - (N - 1) / 2) * 27, 0, abre), ergue);
+        let x = Math.sin(rad) * raio;
+        let z = prof * raio;
+        if (!formado) {
+          // Fileira que se enrola: os cards ficam num arco de raio `raio / enrola`,
+          // nos ângulos `ângulo × enrola` (com enrola → 0 o arco é uma reta). Usa
+          // o ângulo contínuo, para a fileira não se partir em ±180°.
+          const g = (s.giroAcum[i] * Math.PI) / 180;
+          const reta = enrola < 1e-4;
+          const naFileira = reta ? raio * g : (raio / enrola) * Math.sin(g * enrola);
+          x = mix(lugarNaPilha(i) * s.w * PILHA_PASSO, naFileira, abre);
+          z = mix(PILHA_Z, raio, enrola) + (reta ? 0 : (raio / enrola) * (Math.cos(g * enrola) - 1));
+        }
+        const k = mix(1, escalaDe(prof, s.cresce), enrola);
+        const inclina = PILHA_INCLINA[i % PILHA_INCLINA.length] * (1 - abre);
+
+        dados[i] = { el, n, passo: Number.isFinite(passo) ? passo : 0, prof, x, y, z, k, inclina, opacidade };
         if (prof > melhor) {
           melhor = prof;
           idx = i;
@@ -432,9 +465,10 @@ export function HeliceSolucoes() {
       // parado, a de sempre —, mas só se ele está escondido nas duas poses (a de
       // agora e a nova, que fica ~90° virada): inteiro atrás do card de destaque
       // ou inteiro fora do palco (no celular o destaque não cobre os de trás).
-      // Ninguém vê a troca.
+      // Ninguém vê a troca. Só vale com o anel formado: na entrada os cards
+      // estão à vista, fora das poses do anel.
       const f = dados[idx];
-      if (f && f.monta === 1) {
+      if (f && formado) {
         const cobre = caixaNaTela(f.x, f.y, f.z, s.giroAcum[idx] * giroCard, f.k, s.largura, s.centro);
         const folgaX = (cobre.x1 - cobre.x0) * 0.02;
         const folgaY = (cobre.y1 - cobre.y0) * 0.02;
@@ -442,7 +476,7 @@ export function HeliceSolucoes() {
           (c.x0 >= cobre.x0 + folgaX && c.x1 <= cobre.x1 - folgaX && c.y0 >= cobre.y0 + folgaY && c.y1 <= cobre.y1 - folgaY) || c.x0 >= s.w / 2 || c.x1 <= -s.w / 2;
         for (let i = 0; i < N; i++) {
           const d = dados[i];
-          if (!d || i === idx || d.monta < 1 || Math.abs(d.n) <= 90) continue;
+          if (!d || i === idx || Math.abs(d.n) <= 90) continue;
           const indoAoFundo = d.passo * d.n > 0;
           const nova = indoAoFundo ? d.n - 360 * Math.sign(d.n) : d.n;
           if (nova === s.giroAcum[i] || Math.abs(nova) > TROCA_MAX) continue;
@@ -456,12 +490,13 @@ export function HeliceSolucoes() {
       for (let i = 0; i < N; i++) {
         const d = dados[i];
         if (!d) continue;
-        const { el, prof, monta, x, y, z, k, giro, opacidade } = d;
+        const { el, prof, x, y, z, k, inclina, opacidade } = d;
         // O card gira com o anel (só GIRO_CARD do ângulo, fora do celular): de
         // frente na frente, de costas quando passa por trás (aí aparece o verso).
-        const giroDoCard = s.giroAcum[i] * giroCard * monta; // graus
+        // Na entrada, o giro cresce junto com o enrolar da fileira.
+        const giroDoCard = s.giroAcum[i] * giroCard * enrola; // graus
         definir(el, "visibility", "visible");
-        definir(el, "transform", `translate(-50%,-50%) translate3d(${f2(x)}px,${f2(y)}px,${f2(z)}px) rotateY(${f2(giroDoCard)}deg) rotateZ(${f2(giro * (1 - monta))}deg) scale(${k.toFixed(4)})`);
+        definir(el, "transform", `translate(-50%,-50%) translate3d(${f2(x)}px,${f2(y)}px,${f2(z)}px) rotateY(${f2(giroDoCard)}deg) rotateZ(${f2(inclina)}deg) scale(${k.toFixed(4)})`);
 
         // Luz por card, em variáveis CSS que só mexem em opacidade: os de trás
         // escurecem até a cor do palco e o da frente acende nos últimos ~30°,
@@ -536,10 +571,7 @@ export function HeliceSolucoes() {
   useEffect(() => {
     if (!visivel) return;
     const s = st.current;
-    if (s.voo < 0) {
-      s.nuvem = Array.from({ length: N }, () => ({ espalha: Math.random() - 0.5, giro: (Math.random() - 0.5) * 110 }));
-      s.voo = reduce ? ENTRADA_MS : 0;
-    }
+    if (s.voo < 0) s.voo = reduce ? ENTRADA_MS : 0;
     let raf = 0;
     let ultimo = 0;
     let ultimaChave = NaN;

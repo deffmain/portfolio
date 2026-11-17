@@ -219,9 +219,9 @@ export const solucoes: Solucao[] = [
     processo: [
       { texto: "Desenvolvido issue a issue com apoio de IA: cada mudança nasce de uma issue, vira PR e só entra com o CI verde.", ia: true },
       { texto: "Ícones da coleção desenhados com uma skill própria (cultiva-emoji), que mantém o traço da marca em cada novo ícone.", ia: true },
-      { texto: "Evoluiu de um protótipo em HTML para uma stack full-stack dockerizada, com o motor de simulação autoritativo em Java no servidor." },
-      { texto: "Pronto para produção: logs JSON com request-id, métricas Prometheus e Grafana, trilha de auditoria, ShedLock nos jobs e headers de segurança." },
-      { texto: "Autenticação JWT com refresh token em cookie HttpOnly e login com Google." },
+      { texto: "Evoluiu de um protótipo em HTML para uma stack full-stack dockerizada, com o motor de simulação autoritativo em Java no servidor.", ia: true },
+      { texto: "Pronto para produção: logs JSON com request-id, métricas Prometheus e Grafana, trilha de auditoria, ShedLock nos jobs e headers de segurança.", ia: true },
+      { texto: "Autenticação JWT com refresh token em cookie HttpOnly e login com Google.", ia: true },
     ],
     resultado:
       "Um produto funcional, com frontend, API e banco em containers, testes no CI e a observabilidade de um sistema de produção.",

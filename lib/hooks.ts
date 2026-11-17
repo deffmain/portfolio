@@ -38,8 +38,18 @@ export function useCopiar(texto: string, fallback: () => void) {
  * O cabeçalho fixo recolhe junto com o ajuste e fica recolhido enquanto a
  * seção cobre o topo da tela; volta quando o usuário sai dela, para cima ou
  * para baixo.
+ *
+ * `centrar`: para uma seção mais baixa que a tela (o carrossel de telas do
+ * estudo de caso). Ela fica centrada na altura, sem passar para baixo do
+ * cabeçalho, e o cabeçalho não recolhe.
+ * `armadoNaCarga`: a seção já aparece ao abrir a página, e o ajuste vale
+ * desde a primeira rolagem do usuário (a rolagem da própria página ao abrir,
+ * sem roda, tecla nem toque, não conta).
  */
-export function useEnquadrarAoChegar(ref: RefObject<HTMLElement | null>) {
+export function useEnquadrarAoChegar(
+  ref: RefObject<HTMLElement | null>,
+  { centrar = false, armadoNaCarga = false }: { centrar?: boolean; armadoNaCarga?: boolean } = {},
+) {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -56,8 +66,10 @@ export function useEnquadrarAoChegar(ref: RefObject<HTMLElement | null>) {
       return Math.max(0, Math.min(r.bottom, window.innerHeight) - Math.max(r.top, 0)) / r.height;
     };
 
-    // Abrindo a página já na seção, ou voltando de um projeto, não há chegada.
-    let armado = naTela() < CHEGOU;
+    // Abrindo a página já na seção, ou voltando de um projeto, não há chegada
+    // (a não ser com `armadoNaCarga`).
+    let armado = armadoNaCarga || naTela() < CHEGOU;
+    let interagiu = !armadoNaCarga; // com armadoNaCarga, só depois de roda, tecla ou toque
     let espera = 0;
     let tocando = false;
     let raf = 0;
@@ -69,6 +81,7 @@ export function useEnquadrarAoChegar(ref: RefObject<HTMLElement | null>) {
     };
     /** Recolhido durante o ajuste e enquanto a seção cobre o topo da tela. */
     const atualizarCabecalho = () => {
+      if (centrar) return;
       const r = el.getBoundingClientRect();
       recolherCabecalho(raf !== 0 || (r.top <= 1 && r.bottom > ALTURA_CABECALHO));
     };
@@ -95,9 +108,13 @@ export function useEnquadrarAoChegar(ref: RefObject<HTMLElement | null>) {
     };
 
     const onFim = () => {
-      if (tocando || raf || !armado || naTela() < CHEGOU) return;
+      if (tocando || raf || !armado || !interagiu || naTela() < CHEGOU) return;
       armado = false;
-      const t = el.getBoundingClientRect().top;
+      const r = el.getBoundingClientRect();
+      // Onde o topo da seção para: no topo da tela, ou, com `centrar`, no meio
+      // da altura que sobra, sem ficar atrás do cabeçalho.
+      const alvo = centrar ? Math.max(ALTURA_CABECALHO, (window.innerHeight - r.height) / 2) : 0;
+      const t = r.top - alvo;
       if (Math.abs(t) >= 2) deslizar(window.scrollY + t);
       atualizarCabecalho();
     };
@@ -120,6 +137,7 @@ export function useEnquadrarAoChegar(ref: RefObject<HTMLElement | null>) {
       aguardar();
     };
     const onEntrada = () => {
+      interagiu = true;
       interromper();
       aguardar();
     };
@@ -129,6 +147,7 @@ export function useEnquadrarAoChegar(ref: RefObject<HTMLElement | null>) {
     // Com o dedo na tela o usuário ainda está rolando, mesmo parado.
     const onToque = (e: TouchEvent) => {
       tocando = e.type === "touchstart";
+      interagiu = true;
       if (tocando) interromper();
       aguardar();
     };
@@ -149,5 +168,5 @@ export function useEnquadrarAoChegar(ref: RefObject<HTMLElement | null>) {
       window.clearTimeout(espera);
       for (const [nome, fn] of eventos) window.removeEventListener(nome, fn as EventListener);
     };
-  }, [ref]);
+  }, [ref, centrar, armadoNaCarga]);
 }

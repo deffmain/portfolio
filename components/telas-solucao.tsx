@@ -50,9 +50,37 @@ import viajaViagem1440 from "@/content/capturas/viaja-viagem-1440.webp";
 import viajaAcerto960 from "@/content/capturas/viaja-acerto-960.webp";
 import viajaAcerto1280 from "@/content/capturas/viaja-acerto-1280.webp";
 import viajaAcerto1440 from "@/content/capturas/viaja-acerto-1440.webp";
+import dashVisao960 from "@/content/capturas/dashboard-visao-960.webp";
+import dashVisao1280 from "@/content/capturas/dashboard-visao-1280.webp";
+import dashVisao1440 from "@/content/capturas/dashboard-visao-1440.webp";
+import dashTempo747 from "@/content/capturas/dashboard-tempo-747.webp";
+import dashTempo1121 from "@/content/capturas/dashboard-tempo-1121.webp";
+import dashTempo1494 from "@/content/capturas/dashboard-tempo-1494.webp";
+import dashMapa960 from "@/content/capturas/dashboard-mapa-960.webp";
+import dashMapa1280 from "@/content/capturas/dashboard-mapa-1280.webp";
+import dashMapa1440 from "@/content/capturas/dashboard-mapa-1440.webp";
+import dashArea960 from "@/content/capturas/dashboard-area-960.webp";
+import dashArea1280 from "@/content/capturas/dashboard-area-1280.webp";
+import dashArea1440 from "@/content/capturas/dashboard-area-1440.webp";
+import dashMotivos705 from "@/content/capturas/dashboard-motivos-705.webp";
+import dashMotivos1058 from "@/content/capturas/dashboard-motivos-1058.webp";
+import dashMotivos1410 from "@/content/capturas/dashboard-motivos-1410.webp";
+import dashChamados960 from "@/content/capturas/dashboard-chamados-960.webp";
+import dashChamados1280 from "@/content/capturas/dashboard-chamados-1280.webp";
+import dashChamados1440 from "@/content/capturas/dashboard-chamados-1440.webp";
+import dashRelatorio960 from "@/content/capturas/dashboard-relatorio-960.webp";
+import dashRelatorio1280 from "@/content/capturas/dashboard-relatorio-1280.webp";
+import dashRelatorio1440 from "@/content/capturas/dashboard-relatorio-1440.webp";
 
 /** Capturas em três larguras, da menor para a maior: telas em 16:10; painéis no formato próprio, com cantos transparentes. */
 const versoes: Record<TelaImagem, StaticImageData[]> = {
+  "dashboard-visao": [dashVisao960, dashVisao1280, dashVisao1440],
+  "dashboard-tempo": [dashTempo747, dashTempo1121, dashTempo1494],
+  "dashboard-mapa": [dashMapa960, dashMapa1280, dashMapa1440],
+  "dashboard-area": [dashArea960, dashArea1280, dashArea1440],
+  "dashboard-motivos": [dashMotivos705, dashMotivos1058, dashMotivos1410],
+  "dashboard-chamados": [dashChamados960, dashChamados1280, dashChamados1440],
+  "dashboard-relatorio": [dashRelatorio960, dashRelatorio1280, dashRelatorio1440],
   "cultiva-planejador": [planejador960, planejador1280, planejador1440],
   "cultiva-inspetor": [inspetor480, inspetor720, inspetor960],
   "cultiva-solo": [solo345, solo518, solo690],

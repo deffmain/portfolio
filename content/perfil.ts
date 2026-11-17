@@ -30,6 +30,13 @@ export type Visual = "dashboard" | "manuais" | "cultiva" | "viaja" | "park";
 
 /** Capturas das telas de uma solução (arquivos em content/capturas, mapeados em components/telas-solucao.tsx). */
 export type TelaImagem =
+  | "dashboard-visao"
+  | "dashboard-tempo"
+  | "dashboard-mapa"
+  | "dashboard-area"
+  | "dashboard-motivos"
+  | "dashboard-chamados"
+  | "dashboard-relatorio"
   | "cultiva-planejador"
   | "cultiva-inspetor"
   | "cultiva-solo"
@@ -106,6 +113,59 @@ export const solucoes: Solucao[] = [
     ],
     stack: ["Node.js 20", "JavaScript", "GitHub API", "GitHub App", "SVG", "Docker", "node:test", "CI"],
     visual: "dashboard",
+    telas: [
+      {
+        imagem: "dashboard-visao",
+        titulo: "Visão geral",
+        texto:
+          "Os números do suporte na primeira tela: quantos chamados entraram, quantos seguem abertos, quanto tempo levam e quais empresas mais demandam.",
+        alt: "Painel do Dashboard de Suporte com o filtro de 90 dias: 202 chamados (12 abertos e 190 fechados), 11 empresas atendidas, tempo médio de resolução de 24,3 h e mediano de 3,0 h; abaixo, o anel de status com quem atendeu os chamados e as barras de chamados por empresa, lideradas pelo Pet Shop Patinhas do Ipê, com 43.",
+      },
+      {
+        imagem: "dashboard-tempo",
+        painel: true,
+        titulo: "Tempo de resolução por empresa",
+        texto:
+          "O tempo médio de resolução de cada empresa mostra onde o atendimento demora e qual cliente precisa de mais atenção.",
+        alt: "Card Tempo médio de resolução por empresa com barras roxas: a Banho & Tosa Rabo Abanando no topo, com 2,5 dias, seguida do Hospital Veterinário Aurora (27,2 h) e da Agropecuária Boa Colheita (26,7 h), até a Clínica Focinho Gelado, com 9,2 h.",
+      },
+      {
+        imagem: "dashboard-mapa",
+        titulo: "Mapa de usabilidade",
+        texto:
+          "Cada área do sistema vira uma estrela do tamanho do volume de chamados: o suporte enxerga de relance onde o produto mais gera dúvidas.",
+        alt: "Mapa de usabilidade em forma de céu: cada área do sistema é uma estrela colorida, com Comercial (69 chamados) e Financeiro (57) maiores e mais brilhantes que Configurações, Arquivos, Relatórios, Estética, Clínica e Laboratório; no canto, o resumo de todas as áreas, com 202 chamados e 12 em aberto.",
+      },
+      {
+        imagem: "dashboard-area",
+        titulo: "Dentro de uma área",
+        texto:
+          "Ao entrar numa área, a câmera viaja até os subgrupos e funções, até a tela exata que concentra os chamados.",
+        alt: "Constelação da área Comercial, com 69 chamados: a estrela central ligada aos subgrupos Notas Fiscais (28), Vendas (16), Painel WhatsApp (9), Pedidos de Vendas (6), Orçamentos (5) e Compras (5); no canto, o resumo da área, com 30,2 h de resolução média e 5 chamados em aberto.",
+      },
+      {
+        imagem: "dashboard-motivos",
+        painel: true,
+        titulo: "Motivos",
+        texto:
+          "No fim do caminho, a descrição e a resolução de cada chamado: o motivo real por trás do número, pronto para virar melhoria no produto.",
+        alt: "Card Fechamento de venda (Comercial › Vendas), com 14 chamados e 24,2 h de média: os chamados #299 e #277, Venda duplicada no histórico, e o #261, Desconto não aparece no cupom, cada um com empresa, data, tempo de resolução, descrição e resolução.",
+      },
+      {
+        imagem: "dashboard-chamados",
+        titulo: "Chamados",
+        texto:
+          "A lista completa, com o local no sistema, a prioridade, o tempo de resolução e quem atendeu, e uma busca por título ou empresa.",
+        alt: "Tabela Chamados com 202 itens e o campo de busca por título ou empresa: cada linha traz número, título, empresa, local no sistema, tipo, prioridade, tempo de resolução, status (Aberto ou Fechado) e quem atendeu, como o #299, Venda duplicada no histórico, um bug de prioridade alta resolvido em 4,1 h.",
+      },
+      {
+        imagem: "dashboard-relatorio",
+        titulo: "Relatório",
+        texto:
+          "Um clique gera o relatório para imprimir ou salvar em PDF, com o mesmo recorte dos filtros, pronto para a reunião com o cliente.",
+        alt: "Relatório de Suporte em página branca, com o recorte dos últimos 90 dias e o botão Imprimir / Salvar como PDF: o resumo com 202 chamados, 12 abertos, 190 fechados, 11 empresas atendidas e os tempos médio (24,3 h) e mediano (3,0 h) de resolução, e a tabela de chamados por empresa.",
+      },
+    ],
     privado: "Ferramenta interna da Sysok — código privado.",
   },
   {

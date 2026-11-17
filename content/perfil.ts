@@ -9,9 +9,9 @@ export const perfil = {
   githubUser: "deffmain",
   linkedin: "https://www.linkedin.com/in/micael-cruz-415a92248",
   intro:
-    "Desenvolvedor na Sysok e estudante de Engenharia de Software. Transformo problemas de operação — suporte, treinamento, planejamento — em ferramentas que as pessoas usam no dia a dia.",
+    "Suporte de TI na Sysok e estudante de Engenharia de Software. Transformo problemas de operação — suporte, treinamento, planejamento — em ferramentas que as pessoas usam no dia a dia.",
   sobre: [
-    "Trabalho na Sysok com suporte, implantação do ERP e desenvolvimento de soluções internas. Estar perto de quem usa o sistema me ensinou a começar pelo problema e só depois escolher a tecnologia.",
+    "Na Sysok, meu cargo é de suporte de TI: atendo clientes e acompanho a implantação do ERP. Nesse dia a dia, desenvolvo soluções internas para os problemas que encontro. Estar perto de quem usa o sistema me ensinou a começar pelo problema e só depois escolher a tecnologia.",
     "Minha base é Java e Spring Boot, com APIs, autenticação e bancos relacionais; no front, React e Next.js. Hoje uso IA como parte do processo de engenharia — para especificar, implementar, revisar e automatizar — e sigo um plano de estudos para me tornar AI Engineer.",
   ],
 };
@@ -391,7 +391,7 @@ export const processo: { titulo: string; texto: string; evidencia: string }[] = 
 ];
 
 export const trajetoria: { periodo: string; titulo: string; lugar: string }[] = [
-  { periodo: "Atual", titulo: "Suporte, implantação e desenvolvimento", lugar: "Sysok Sistemas" },
+  { periodo: "Atual", titulo: "Suporte de TI e implantação do ERP", lugar: "Sysok Sistemas" },
   { periodo: "Atual", titulo: "Criador", lugar: "Cultiva" },
   { periodo: "2026", titulo: "Dev — Social & roteiros com IA", lugar: "Avori · Projeto Integrador" },
   { periodo: "Em curso", titulo: "Engenharia de Software · 7º período", lugar: "UniEVANGÉLICA" },

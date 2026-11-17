@@ -6,8 +6,10 @@ qualquer sessão ou conta do Claude que trabalhar aqui. Complementa o
 
 ## Quem é e como trabalha
 
-- **Micael Martins:** desenvolvedor na Sysok e estudante de Engenharia de
-  Software. Este portfólio é para uma candidatura a vaga.
+- **Micael Martins:** cargo de **suporte de TI** na Sysok (não é
+  desenvolvedor oficialmente lá, embora crie ferramentas internas) e estudante
+  de Engenharia de Software. Este portfólio é para uma candidatura a vaga. Nunca
+  escrever "desenvolvedor na Sysok" no site.
 - **Idioma:** escreva sempre em **português (pt-BR)**.
 - **Pedidos de prompt:** muitas vezes ele pede um **prompt** para outra sessão
   do Claude executar, em vez da mudança em si. Ele também quer aprender a

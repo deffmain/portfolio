@@ -227,7 +227,40 @@ qualquer sessão ou conta do Claude que trabalhar aqui. Complementa o
     recolhe) e `armadoNaCarga` (vale desde a primeira roda, tecla ou toque,
     porque o carrossel já aparece ao abrir a página). Ele rejeitou encolher o
     carrossel para caber na tela: as imagens ficavam pequenas demais;
-  - o Cultiva tem 6 telas, e os outros projetos ainda não têm.
+  - os indicadores da barra encolhem quando falta espaço (a largura fica no
+    botão, com `shrink`), e as setas do celular não (`shrink-0`): com 10
+    telas em 390 px as setas ficavam ovais;
+  - o painel reserva a altura no celular antes de carregar (largura definida
+    por `--larg-painel`): com o painel longe do 1º slide, a imagem `lazy`
+    fazia o carrossel crescer no meio da navegação;
+  - o Cultiva tem 6 telas e a Avori tem 10 (o app inteiro, escolha dele em
+    16/11/2026); os outros projetos ainda não têm.
+- **Simulação "Roteiros com IA, ao vivo"** (fim do estudo de caso da Avori,
+  `components/lab/roteiro-demo.tsx`, 17/11/2026): segue o modelo da tela
+  "Nova viagem com a Avori" que aparece nos prints, a pedido dele. Conversa de
+  seis perguntas (mesmos textos e opções do app) e prévia em dias com horário
+  e atividade, com a identidade do portfólio, não a verde do avori. Saíram
+  resumo, orçamento e dicas. Sem chave de IA, a rota gera um roteiro genérico
+  para o destino pedido (antes era sempre Pirenópolis). O "Refazer" remonta a
+  demo, e o `useDemoStream` aborta o pedido ao desmontar.
+- **Avori (antigo Viaja+):** em 17/11/2026 o projeto mudou de identidade.
+  O nome exibido é "Avori" (feminino: "a Avori", "na Avori"). O slug
+  `/solucoes/viaja-mais`, os arquivos `viaja-*.webp` e o repositório
+  `viaja-mais` continuam com o nome antigo, para não quebrar links. O card é
+  `Imagens_dos_projetos/ViajaMais/Avori_CardCarrossel.jfif`.
+- **Capturas da Avori** (`viaja-<tela>-<largura>.webp`):
+  - capturadas como o app é, com a barra do topo e o logo avori;
+  - a conta dos prints é fictícia (Helena Prado) e as fotos de perfil são
+    rostos gerados (thispersondoesnotexist.com), para não ligar o rosto de
+    uma pessoa real a um perfil inventado. As capas de viagem e as fotos dos
+    posts são do Wikimedia Commons, só CC0 ou domínio público;
+  - o feed do app é uma prévia com dados fixos no código: as fotos dos posts
+    entraram só no DOM, na hora da captura (escolha dele), sem alterar o
+    repositório do app;
+  - o app fica em `C:\Users\micae\viaja-mais`, com trabalho dele em
+    andamento: não altere arquivos, não rode `npm run setup` (faz
+    `db reset`) e suba o Supabase com `docker start` nos contêineres
+    `supabase_*_viaja-mais` e o app em outra porta (`--port 3100`).
 - **O que ele não gostou** (não proponha de novo):
   - personagem animado desenhado à mão (o "monstrinho" / macaco);
   - o estilo Moebius/Sable aplicado ao site;

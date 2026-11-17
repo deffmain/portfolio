@@ -43,9 +43,17 @@ const capturas: Partial<Record<Visual, { versoes: StaticImageData[]; alt: string
  */
 const SIZES_CAPTURA = "(max-width: 767px) calc(100vw - 74px), min(896px, calc(100vw - 210px))";
 
+/** Ilustrações que não são de uma interface: legenda e texto alternativo próprios. */
+const ilustracoes: Partial<Record<Visual, { alt: string; legenda: string }>> = {
+  pesquisa: {
+    alt: "A mesma instrução em três níveis: a += b em C, add eax, ebx em assembly e os bytes 01 D8 em código de máquina; uma seta tracejada sai da IA direto para o binário, com a pergunta “direto ao binário?”.",
+    legenda: "A mesma instrução em três níveis: C, assembly e código de máquina.",
+  },
+};
+
 /** Legenda da capa: diz se a imagem é uma captura real ou uma ilustração. */
 export function legendaVisual(visual: Visual) {
-  return capturas[visual]?.legenda ?? "Ilustração esquemática da interface.";
+  return capturas[visual]?.legenda ?? ilustracoes[visual]?.legenda ?? "Ilustração esquemática da interface.";
 }
 
 const INK = "var(--ink)";
@@ -113,55 +121,60 @@ function Dashboard() {
   );
 }
 
-function Pagina({ x, y, r, capa }: { x: number; y: number; r: number; capa?: boolean }) {
-  const TEAL = "#2f6f6b";
-  return (
-    <g transform={`translate(${x} ${y}) rotate(${r})`}>
-      <rect width="236" height="320" rx="4" fill={PAPER} stroke={LINE} />
-      {capa ? (
-        <>
-          <rect width="236" height="120" rx="4" fill={TEAL} />
-          <rect x="20" y="70" width="140" height="10" rx="2" fill={PAPER} />
-          <rect x="20" y="88" width="96" height="6" rx="2" fill="rgb(242 239 232 / 0.6)" />
-          <rect x="20" y="144" width="196" height="96" rx="4" fill={SOFT} stroke={LINE} />
-          <rect x="34" y="158" width="168" height="12" rx="2" fill={LINE} />
-          <rect x="34" y="178" width="120" height="44" rx="3" fill="rgb(20 20 19 / 0.08)" />
-          <rect x="20" y="256" width="150" height="6" rx="2" fill={LINE} />
-          <rect x="20" y="270" width="110" height="6" rx="2" fill={LINE} />
-          <rect x="0" y="300" width="236" height="20" fill={TEAL} opacity="0.12" />
-          <rect x="196" y="306" width="24" height="6" rx="2" fill={TEAL} />
-        </>
-      ) : (
-        <>
-          <rect width="236" height="22" rx="4" fill={TEAL} opacity="0.9" />
-          {[44, 58, 72].map((yy) => (
-            <rect key={yy} x="20" y={yy} width={yy === 72 ? 120 : 196} height="6" rx="2" fill={LINE} />
-          ))}
-          <rect x="20" y="92" width="196" height="110" rx="4" fill={SOFT} stroke={LINE} />
-          <rect x="20" y="218" width="196" height="44" rx="4" fill={TEAL} opacity="0.1" />
-          <rect x="20" y="218" width="4" height="44" fill={TEAL} />
-        </>
-      )}
-    </g>
-  );
-}
-
-function Manuais() {
+/** A mesma instrução em três níveis (C, assembly x86-64 e os bytes reais dela,
+ *  01 D8) e a IA indo direto ao binário: a pergunta da pesquisa. */
+function Pesquisa() {
+  const MONO = { fontFamily: "var(--font-geist-mono)" };
+  const camadas = [
+    { y: 92, rotulo: "alto nível · C", codigo: "a += b;" },
+    { y: 208, rotulo: "assembly · x86-64", codigo: "add eax, ebx" },
+    { y: 324, rotulo: "código de máquina", codigo: "01 D8", bits: "00000001 11011000" },
+  ];
   return (
     <g>
-      <Pagina x={170} y={110} r={-8} />
-      <Pagina x={300} y={84} r={4} />
-      <Pagina x={418} y={96} r={-2} capa />
-      <g transform="translate(108 404)">
-        {["vendas", "orçamentos", "compras", "permissões", "O.S."].map((t, i) => (
-          <g key={t} transform={`translate(${i * 96} 0)`}>
-            <rect width="88" height="26" rx="13" fill={i === 0 ? INK : "none"} stroke={i === 0 ? INK : LINE} />
-            <text x="44" y="17" textAnchor="middle" fontSize="11" fill={i === 0 ? PAPER : INK} style={{ fontFamily: "var(--font-geist-mono)" }}>
-              {t}
+      <rect width="800" height="500" fill={PAPER} />
+      {camadas.map((c) => (
+        <g key={c.rotulo} transform={`translate(56 ${c.y})`}>
+          <rect width="470" height="92" rx="12" fill={c.bits ? "rgb(180 68 31 / 0.07)" : "var(--paper-2)"} stroke={c.bits ? "rgb(180 68 31 / 0.45)" : LINE} />
+          <text x="24" y="28" fontSize="13" letterSpacing="1.8" fill="var(--muted)" style={MONO}>
+            {c.rotulo.toUpperCase()}
+          </text>
+          <text x="24" y={c.bits ? 64 : 72} fontSize="34" fill={c.bits ? RUST : INK} style={MONO}>
+            {c.codigo}
+          </text>
+          {c.bits && (
+            <text x="24" y="83" fontSize="14" letterSpacing="1" fill="var(--muted)" style={MONO}>
+              {c.bits}
             </text>
-          </g>
-        ))}
-      </g>
+          )}
+        </g>
+      ))}
+      {[
+        { y: 186, t: "compilador" },
+        { y: 302, t: "montador" },
+      ].map((s) => (
+        <g key={s.t} transform={`translate(96 ${s.y})`}>
+          <line x1="0" x2="0" y1="0" y2="20" stroke="var(--ink-soft)" strokeWidth="1.5" />
+          <path d="M-5 14 L0 20 L5 14" fill="none" stroke="var(--ink-soft)" strokeWidth="1.5" />
+          <text x="14" y="15" fontSize="12" fill="var(--ink-soft)" style={MONO}>
+            {s.t}
+          </text>
+        </g>
+      ))}
+      <circle cx="636" cy="138" r="34" fill={RUST} />
+      <text x="636" y="147" fontSize="24" textAnchor="middle" fill={PAPER} style={MONO}>
+        IA
+      </text>
+      <path d="M636 174 C 650 270, 630 340, 538 372" fill="none" stroke={RUST} strokeWidth="2" strokeDasharray="7 6" />
+      <path d="M549 361 L537 372 L552 376" fill="none" stroke={RUST} strokeWidth="2" />
+      <text fontSize="28" fill={RUST} style={{ fontFamily: "var(--font-instrument-serif)", fontStyle: "italic" }}>
+        <tspan x="664" y="262">
+          direto ao
+        </tspan>
+        <tspan x="664" dy="30">
+          binário?
+        </tspan>
+      </text>
     </g>
   );
 }
@@ -349,9 +362,9 @@ export function VisualSolucao({ visual, className, destaque = false }: { visual:
     );
   }
   return (
-    <svg viewBox="0 0 800 500" className={className} role="img" aria-label="Ilustração esquemática da solução">
+    <svg viewBox="0 0 800 500" className={className} role="img" aria-label={ilustracoes[visual]?.alt ?? "Ilustração esquemática da solução"}>
       {visual === "dashboard" && <Dashboard />}
-      {visual === "manuais" && <Manuais />}
+      {visual === "pesquisa" && <Pesquisa />}
       {visual === "cultiva" && <Cultiva />}
       {visual === "viaja" && <Viaja />}
       {visual === "park" && <Park />}

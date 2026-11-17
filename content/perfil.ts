@@ -26,7 +26,7 @@ export const secoes: { id: SecaoId; label: string; descricao: string }[] = [
   { id: "contato", label: "Contato", descricao: "E-mail e GitHub" },
 ];
 
-export type Visual = "dashboard" | "manuais" | "cultiva" | "viaja" | "park";
+export type Visual = "dashboard" | "pesquisa" | "cultiva" | "viaja" | "park";
 
 /** Capturas das telas de uma solução (arquivos em content/capturas, mapeados em components/telas-solucao.tsx). */
 export type TelaImagem =
@@ -80,6 +80,12 @@ export type Solucao = {
   telas?: Tela[];
   repo?: string;
   privado?: string;
+  /** Trabalho em andamento: `selo · estagio` aparece no topo do estudo de caso. */
+  status?: { selo: string; estagio: string };
+  /** Títulos dos quatro blocos do estudo de caso, quando não é um produto (ex.: pesquisa). */
+  blocos?: [string, string, string, string];
+  /** PDF servido pelo site (em public/): vira o link "Ler o artigo (PDF)". */
+  artigo?: string;
   demo?: "roteiro";
 };
 
@@ -169,33 +175,33 @@ export const solucoes: Solucao[] = [
     privado: "Ferramenta interna da Sysok — código privado.",
   },
   {
-    slug: "manuais-de-implantacao",
-    nome: "Manuais de implantação",
-    contexto: "Sysok Sistemas · treinamento de clientes",
+    slug: "codigo-de-maquina-com-ia",
+    nome: "Código de máquina com IA",
+    contexto: "Pesquisa acadêmica · artigo",
     ano: "2026",
-    papel: "Conteúdo, padrão visual e automação",
-    problemaCurto: "Cada cliente novo aprendia o ERP do zero, com materiais sem padrão.",
+    papel: "Autor",
+    status: { selo: "Em desenvolvimento", estagio: "estudo inicial" },
+    blocos: ["A pergunta", "Hipótese e delimitação", "Referencial e processo", "Estágio atual"],
+    problemaCurto: "Quando a IA escreve o código de máquina, o que se ganha e o que se perde?",
     problema:
-      "Na implantação do ERP, o treinamento dependia de explicação ao vivo e de documentos feitos cada um de um jeito — difíceis de manter, de reaproveitar e de entregar com cara profissional.",
+      "As linguagens de alto nível trocaram o controle fino da máquina por produtividade e portabilidade. Com o hardware entregando menos ganho automático e a IA barateando a escrita de código de baixo nível, essa troca volta à mesa. A pergunta: quais são os ganhos e as perdas de desenvolver em baixo nível, frente ao alto nível, quando a IA gera o código? E o ganho de desempenho compensa o custo de manter, portar e verificar?",
     solucao: [
-      "Uma série de manuais passo a passo cobrindo os fluxos que o cliente usa no dia a dia: vendas, orçamentos, pedidos de compra, cadastros, permissões de usuários, ordens de serviço e recebimento em terminais integrados.",
-      "Todos com a mesma identidade visual: capa, faixas na cor da marca, capturas de tela emolduradas, blocos de destaque, cabeçalho e rodapé com autor, data e paginação.",
+      "Hipótese: a IA não elimina o custo do desenvolvimento em baixo nível, mas o desloca — da escrita para a verificação.",
+      "Delimitação: código de máquina é a codificação binária executável; assembly é a representação simbólica dela. A evidência atual de geração por IA está no assembly e nas representações intermediárias — o que vai além disso é tratado como extrapolação, dita de forma explícita.",
     ],
     processo: [
-      { texto: "Criei uma skill de IA (sysok-docs) que aplica o padrão da empresa a partir de rascunhos, anotações e prints — a formatação repetitiva virou automação.", ia: true },
-      { texto: "O conteúdo é escrito por mim a partir do uso real do sistema na implantação; a IA cuida da estrutura e da consistência visual.", ia: true },
-      { texto: "Um padrão único para procedimentos, treinamentos e materiais de cliente — qualquer pessoa da equipe consegue gerar um manual novo no mesmo formato." },
+      { texto: "Níveis de abstração e o papel do compilador: o que se ganhou e o que se perdeu ao delegar a tradução para a máquina." },
+      { texto: "Desempenho de hardware: sem o escalonamento de Dennard, o próximo ganho de desempenho volta a vir do software." },
+      { texto: "Custo em baixo nível: a maior parte do custo de um sistema está na manutenção, não na primeira escrita." },
+      { texto: "Geração de código com IA: de programas escritos a partir de texto a rotinas de ordenação descobertas em assembly." },
+      { texto: "Portabilidade, verificação e segurança: x86-64, ARM64 e RISC-V, verificação formal e falhas no código gerado." },
     ],
     resultado:
-      "Onze manuais publicados com o mesmo padrão, prontos para treinar clientes e novos colaboradores sem depender de explicação ao vivo.",
-    numeros: [
-      { valor: "11", rotulo: "manuais publicados" },
-      { valor: "1", rotulo: "padrão visual automatizado" },
-      { valor: "7+", rotulo: "módulos do ERP cobertos" },
-    ],
-    stack: ["Skill de IA personalizada", "Word (.docx)", "Identidade visual Sysok", "Documentação técnica"],
-    visual: "manuais",
-    privado: "Material interno da Sysok.",
+      "Até aqui: introdução, pergunta, hipótese, delimitação e referencial teórico. Ainda não há metodologia nem resultados. Próximo passo: definir como comparar desempenho e custo total — desenvolvimento, manutenção, portabilidade e verificação — sob os mesmos critérios.",
+    numeros: [],
+    stack: ["Compiladores", "Assembly", "Código de máquina", "Arquitetura de computadores", "IA generativa para código", "Verificação formal"],
+    visual: "pesquisa",
+    artigo: "/artigos/codigo-de-maquina-com-ia.pdf",
   },
   {
     slug: "cultiva",

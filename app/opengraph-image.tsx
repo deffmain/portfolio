@@ -30,7 +30,7 @@ export default function OpengraphImage() {
           <span style={{ color: "#b4441f", fontStyle: "italic" }}>problemas reais.</span>
         </div>
         <div style={{ display: "flex", borderTop: "2px solid #141413", paddingTop: 18, fontSize: 24, fontFamily: "sans-serif", color: "#46443f" }}>
-          Dashboard de Suporte · Manuais · Cultiva · Avori · Demo Park API
+          Dashboard de Suporte · Código de máquina com IA · Cultiva · Avori · Demo Park API
         </div>
       </div>
     ),

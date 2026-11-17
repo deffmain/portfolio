@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: "Micael Martins — Desenvolvedor de software",
   description:
-    "Construo software que resolve problemas reais: ferramentas de suporte, documentação de implantação, um simulador de plantio, uma plataforma de viagens em grupo e uma API de estacionamento. Com IA no processo de engenharia.",
+    "Construo software que resolve problemas reais: ferramentas de suporte, uma pesquisa sobre código de máquina gerado por IA, um simulador de plantio, uma plataforma de viagens em grupo e uma API de estacionamento. Com IA no processo de engenharia.",
   openGraph: {
     title: "Micael Martins — Construo software que resolve problemas reais",
     description: "Cinco soluções, do problema ao resultado — e como uso IA no processo de engenharia.",

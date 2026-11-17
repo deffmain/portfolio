@@ -114,7 +114,7 @@ export function comandoLocal(pergunta: string): Comando {
   const solucao = solucoes.find((s) => q.includes(norm(s.nome)) || q.includes(s.slug.replace(/-/g, " ")));
   if (solucao) return { acao: "abrir_solucao", alvo: solucao.slug, resposta: `Abrindo o estudo de caso: ${solucao.nome}.` };
   if (/suporte|chamado|dashboard|painel/.test(q)) return { acao: "abrir_solucao", alvo: "dashboard-de-suporte", resposta: "Abrindo o Dashboard de Suporte." };
-  if (/manua|treinamento|document/.test(q)) return { acao: "abrir_solucao", alvo: "manuais-de-implantacao", resposta: "Abrindo os manuais de implantação." };
+  if (/pesquis|binari|assembly|codigo de maquina|artigo/.test(q)) return { acao: "abrir_solucao", alvo: "codigo-de-maquina-com-ia", resposta: "Abrindo a pesquisa sobre código de máquina com IA." };
   if (/horta|plant|cultiv/.test(q)) return { acao: "abrir_solucao", alvo: "cultiva", resposta: "Abrindo o Cultiva." };
   if (/estaciona|vaga|park|jwt|api rest/.test(q)) return { acao: "abrir_solucao", alvo: "demo-park-api", resposta: "Abrindo a Demo Park API." };
 

@@ -11,6 +11,7 @@ import { VisualSolucao, legendaVisual } from "@/components/visuais";
 import { CapaComTelas } from "@/components/telas-solucao";
 import { Label, Lines, Reveal } from "@/components/ui";
 import { VoltarLink } from "@/components/voltar-link";
+import { LinkArtigo, SeloPagina } from "@/components/selo-status";
 import { RolarParaTopo } from "@/components/rolar-topo";
 import { RoteiroDemo } from "@/components/lab/roteiro-demo";
 
@@ -101,6 +102,14 @@ async function Caso({ params }: Pick<PageProps<"/solucoes/[slug]">, "params">) {
             </ViewTransition>
           </h1>
 
+          {/* Trabalho em andamento (ex.: pesquisa): o estágio e o link do artigo. */}
+          {(s.status || s.artigo) && (
+            <div className="chegada mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 md:mt-8" style={atraso(1)}>
+              {s.status && <SeloPagina status={s.status} />}
+              {s.artigo && <LinkArtigo href={s.artigo} />}
+            </div>
+          )}
+
           {/* Capa. Sem Reveal: ela e o título já chegam prontos, subindo com a página.
               Com telas, um carrossel lateral delas ocupa o lugar da capa. */}
           {s.telas ? (
@@ -130,6 +139,7 @@ async function Caso({ params }: Pick<PageProps<"/solucoes/[slug]">, "params">) {
                   ["Contexto", s.contexto],
                   ["Ano", s.ano],
                   ["Papel", s.papel],
+                  ...(s.status ? [["Estágio", s.status.estagio.charAt(0).toUpperCase() + s.status.estagio.slice(1)]] : []),
                 ].map(([k, v]) => (
                   <div key={k} className="grid grid-cols-[6rem_1fr] gap-4 py-3">
                     <dt className="font-mono text-[11px] text-muted uppercase">{k}</dt>
@@ -142,11 +152,11 @@ async function Caso({ params }: Pick<PageProps<"/solucoes/[slug]">, "params">) {
         </section>
 
         <div className={`${wrap} py-20 md:py-32`}>
-          <Bloco n="01" titulo="O problema">
+          <Bloco n="01" titulo={s.blocos?.[0] ?? "O problema"}>
             <p className="text-[clamp(1.25rem,2vw,1.6rem)] leading-snug text-pretty">{s.problema}</p>
           </Bloco>
 
-          <Bloco n="02" titulo="O que construí">
+          <Bloco n="02" titulo={s.blocos?.[1] ?? "O que construí"}>
             <div className="space-y-5 text-lg leading-relaxed text-pretty text-ink-soft">
               {s.solucao.map((p) => (
                 <p key={p}>{p}</p>
@@ -154,7 +164,7 @@ async function Caso({ params }: Pick<PageProps<"/solucoes/[slug]">, "params">) {
             </div>
           </Bloco>
 
-          <Bloco n="03" titulo="Como construí">
+          <Bloco n="03" titulo={s.blocos?.[2] ?? "Como construí"}>
             <ul className="border-b border-line">
               {s.processo.map((p) => (
                 <li key={p.texto} className="grid gap-2 border-t border-line py-5 md:grid-cols-[1fr_auto] md:gap-8">
@@ -176,18 +186,25 @@ async function Caso({ params }: Pick<PageProps<"/solucoes/[slug]">, "params">) {
             </div>
           </Bloco>
 
-          <Bloco n="04" titulo="Resultado">
+          <Bloco n="04" titulo={s.blocos?.[3] ?? "Resultado"}>
             <p className="text-[clamp(1.25rem,2vw,1.6rem)] leading-snug text-pretty">{s.resultado}</p>
-            <dl className="mt-12 grid gap-8 sm:grid-cols-3">
-              {s.numeros.map((n) => (
-                <div key={n.rotulo} className="flex flex-col border-t border-ink pt-4">
-                  <dt className="order-2 mt-1 text-sm text-muted">{n.rotulo}</dt>
-                  <dd className="order-1 font-serif text-6xl leading-none md:text-7xl">{n.valor}</dd>
-                </div>
-              ))}
-            </dl>
+            {s.numeros.length > 0 && (
+              <dl className="mt-12 grid gap-8 sm:grid-cols-3">
+                {s.numeros.map((n) => (
+                  <div key={n.rotulo} className="flex flex-col border-t border-ink pt-4">
+                    <dt className="order-2 mt-1 text-sm text-muted">{n.rotulo}</dt>
+                    <dd className="order-1 font-serif text-6xl leading-none md:text-7xl">{n.valor}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
             <div className="mt-10">
-              {s.repo ? (
+              {s.artigo ? (
+                <a href={s.artigo} target="_blank" rel="noreferrer" className="group inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-sm text-paper transition hover:bg-rust">
+                  Ler o artigo (PDF)
+                  <ArrowUpRight className="size-4 transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                </a>
+              ) : s.repo ? (
                 <a href={s.repo} target="_blank" rel="noreferrer" className="group inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-sm text-paper transition hover:bg-rust">
                   Ver o código no GitHub
                   <ArrowUpRight className="size-4 transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />

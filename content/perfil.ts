@@ -28,6 +28,15 @@ export const secoes: { id: SecaoId; label: string; descricao: string }[] = [
 
 export type Visual = "dashboard" | "manuais" | "cultiva" | "viaja" | "park";
 
+/** Capturas das telas de uma solução (arquivos em content/capturas, mapeados em components/telas-solucao.tsx). */
+export type TelaImagem = "cultiva-planejador" | "cultiva-inspetor" | "cultiva-solo" | "cultiva-clima" | "cultiva-guia" | "cultiva-conceitos";
+
+/**
+ * Uma tela da solução: a captura e, ao lado, a frase com a função e o valor dela.
+ * `painel`: a captura é só um painel recortado (formato próprio, sem moldura), não a tela 16:10.
+ */
+export type Tela = { imagem: TelaImagem; titulo: string; texto: string; alt: string; painel?: boolean };
+
 export type Solucao = {
   slug: string;
   nome: string;
@@ -44,6 +53,8 @@ export type Solucao = {
   numeros: { valor: string; rotulo: string }[];
   stack: string[];
   visual: Visual;
+  /** Telas do carrossel do topo do estudo de caso, depois da capa. */
+  telas?: Tela[];
   repo?: string;
   privado?: string;
   demo?: "roteiro";
@@ -139,6 +150,52 @@ export const solucoes: Solucao[] = [
     ],
     stack: ["Java", "Spring Boot", "PostgreSQL", "React", "Vite", "JWT", "Prometheus", "Grafana", "Docker", "Vitest"],
     visual: "cultiva",
+    telas: [
+      {
+        imagem: "cultiva-planejador",
+        titulo: "Planejador da horta",
+        texto:
+          "Um gêmeo digital da horta: o cultivador desenha os canteiros em escala real, planta cada cultura e acompanha a simulação do ano inteiro antes de pôr a mão na terra.",
+        alt: "Planejador do Cultiva: ferramentas à esquerda; no centro, a grade da horta com tomate, manjericão, cenoura, pimentão, cebola, alho, beterraba, morango e milho; à direita, a análise da cultura e as próximas colheitas.",
+      },
+      {
+        imagem: "cultiva-inspetor",
+        painel: true,
+        titulo: "Inspetor",
+        texto:
+          "Cada pedaço do canteiro tem a sua ficha (solo, pH, fertilidade, estágio, colheita prevista e vitalidade), para o cultivador entender o que acontece com cada planta.",
+        alt: "Painel Inspetor do Cultiva com a ficha de um pé de tomate: solo humoso, pH 6,6, fertilidade 100/100, estágio de floração (66%), 60 dias de idade, colheita prevista no dia 91 e vitalidade de 100%.",
+      },
+      {
+        imagem: "cultiva-solo",
+        painel: true,
+        titulo: "Simulador de solo",
+        texto:
+          "Escolha o tipo de terra e os adubos e veja como pH, fertilidade, retenção de água e drenagem vão ficar ao fim do regime, antes de gastar com insumos.",
+        alt: "Painel Simular solo do Cultiva com solo franco, um campo para adicionar insumos e o resultado ao fim do regime: pH 6,5, fertilidade 70/100, retenção de água 60/100, drenagem 65/100 e nenhum risco na mistura.",
+      },
+      {
+        imagem: "cultiva-clima",
+        titulo: "Ambiente e clima",
+        texto:
+          "A cidade liga o clima diário real ao motor de simulação. Com as médias e as mínimas de cada estação, o app avisa sobre geada e falta de água na hora certa.",
+        alt: "Janela Ambiente & clima do Cultiva: Anápolis com o clima diário real ativado, data de início do plantio, estação automática, irrigação semanal de 45 mm e a tabela do Cerrado com média, mínima noturna e chuva de cada estação.",
+      },
+      {
+        imagem: "cultiva-guia",
+        titulo: "Guia das culturas",
+        texto:
+          "Catálogo completo com as informações de cada cultura (clima, solo, água, espaçamento e consórcio), capacitando e educando o cultivador.",
+        alt: "Guia das culturas do Cultiva com a ficha da abóbora: ciclo de 120 dias, espaçamento de 90 cm, clima e solo ideais, água e irrigação, adubação, como plantar, tempo até a maturidade e consórcio com milho e feijão.",
+      },
+      {
+        imagem: "cultiva-conceitos",
+        titulo: "Conceitos",
+        texto:
+          "Agronomia explicada para quem não é agrônomo: o que é, por que importa e como agir, com fontes como a Embrapa, para o cultivador decidir com conhecimento, não no achismo.",
+        alt: "Tela Conceitos do Cultiva com o verbete Análise de solo: o que é, por que importa, no que influencia, como descobrir no seu terreno, como agir e a fonte (Embrapa).",
+      },
+    ],
     privado: "Repositório privado — código disponível sob pedido.",
   },
   {

@@ -8,6 +8,7 @@ import { SiteHeader } from "@/components/site-header";
 import { Contato } from "@/components/contato";
 import { CommandPalette } from "@/components/command-palette";
 import { VisualSolucao, legendaVisual } from "@/components/visuais";
+import { CapaComTelas } from "@/components/telas-solucao";
 import { Label, Lines, Reveal } from "@/components/ui";
 import { VoltarLink } from "@/components/voltar-link";
 import { RolarParaTopo } from "@/components/rolar-topo";
@@ -100,15 +101,24 @@ async function Caso({ params }: Pick<PageProps<"/solucoes/[slug]">, "params">) {
             </ViewTransition>
           </h1>
 
-          {/* Capa. Sem Reveal: ela e o título já chegam prontos, subindo com a página. */}
-          <div className="mt-8 rounded-2xl border border-line bg-paper-2 px-4 py-6 md:mt-12 md:px-16 md:py-12">
-            <div className="mx-auto max-w-4xl overflow-hidden rounded-xl border border-line bg-paper-2 shadow-[0_24px_50px_-18px_rgb(20_20_19/0.45)]">
-              <VisualSolucao visual={s.visual} className="block aspect-[16/10] h-auto w-full" destaque />
+          {/* Capa. Sem Reveal: ela e o título já chegam prontos, subindo com a página.
+              Com telas, um carrossel lateral delas ocupa o lugar da capa. */}
+          {s.telas ? (
+            <div className="mt-8 md:mt-12">
+              <CapaComTelas solucao={{ ...s, telas: s.telas }} />
             </div>
-          </div>
-          <p className="chegada mt-3 font-mono text-[11px] text-muted" style={atraso(1)}>
-            {legendaVisual(s.visual)}
-          </p>
+          ) : (
+            <>
+              <div className="mt-8 rounded-2xl border border-line bg-paper-2 px-4 py-6 md:mt-12 md:px-16 md:py-12">
+                <div className="mx-auto max-w-4xl overflow-hidden rounded-xl border border-line bg-paper-2 shadow-[0_24px_50px_-18px_rgb(20_20_19/0.45)]">
+                  <VisualSolucao visual={s.visual} className="block aspect-[16/10] h-auto w-full" destaque />
+                </div>
+              </div>
+              <p className="chegada mt-3 font-mono text-[11px] text-muted" style={atraso(1)}>
+                {legendaVisual(s.visual)}
+              </p>
+            </>
+          )}
 
           <div className="mt-12 grid gap-10 md:mt-16 md:grid-cols-12">
             <p className="chegada font-serif text-[clamp(1.75rem,3.2vw,2.75rem)] leading-[1.1] italic md:col-span-7" style={atraso(2)}>

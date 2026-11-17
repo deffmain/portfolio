@@ -29,7 +29,23 @@ export const secoes: { id: SecaoId; label: string; descricao: string }[] = [
 export type Visual = "dashboard" | "manuais" | "cultiva" | "viaja" | "park";
 
 /** Capturas das telas de uma solução (arquivos em content/capturas, mapeados em components/telas-solucao.tsx). */
-export type TelaImagem = "cultiva-planejador" | "cultiva-inspetor" | "cultiva-solo" | "cultiva-clima" | "cultiva-guia" | "cultiva-conceitos";
+export type TelaImagem =
+  | "cultiva-planejador"
+  | "cultiva-inspetor"
+  | "cultiva-solo"
+  | "cultiva-clima"
+  | "cultiva-guia"
+  | "cultiva-conceitos"
+  | "viaja-roteiro"
+  | "viaja-feed"
+  | "viaja-busca"
+  | "viaja-privado"
+  | "viaja-solicitacoes"
+  | "viaja-foto"
+  | "viaja-perfil"
+  | "viaja-viagens"
+  | "viaja-viagem"
+  | "viaja-acerto";
 
 /**
  * Uma tela da solução: a captura e, ao lado, a frase com a função e o valor dela.
@@ -228,6 +244,79 @@ export const solucoes: Solucao[] = [
     ],
     stack: ["Next.js 16", "React 19", "TypeScript", "Supabase", "PostgreSQL + RLS", "Zod", "Vitest", "Playwright"],
     visual: "viaja",
+    telas: [
+      {
+        imagem: "viaja-roteiro",
+        titulo: "Roteiro com IA",
+        texto:
+          "Seis perguntas sobre destino, datas, grupo, ritmo e orçamento viram um roteiro dia a dia, que o grupo revisa e ajusta antes de criar a viagem.",
+        alt: "Assistente de roteiro da Avori: à esquerda, a conversa com as perguntas já respondidas (Lisboa, uma semana, com amigos, ritmo equilibrado e orçamento moderado); à direita, a prévia do roteiro de Lisboa com os dias 1 a 3: chegada e primeiro passeio, os clássicos e um bate-volta.",
+      },
+      {
+        imagem: "viaja-feed",
+        titulo: "Feed",
+        texto:
+          "As viagens publicadas por quem você segue chegam com foto, datas e o roteiro aberto, para inspirar a próxima viagem do grupo.",
+        alt: "Feed da Avori: publicação de Marina Costa sobre Lisboa, com a foto de um bonde amarelo, o selo de 7 dias, as datas de 12 a 18 de junho e o botão Ver roteiro; ao lado, sugestões de pessoas para seguir e o atalho Pesquisar pessoas.",
+      },
+      {
+        imagem: "viaja-busca",
+        titulo: "Busca de pessoas",
+        texto:
+          "Encontre quem viaja com você pelo nome ou pelo @usuário; o cadeado já avisa quem mantém o perfil fechado.",
+        alt: "Tela Pesquisar da Avori com a busca por “ma”: cinco pessoas na lista, cada uma com foto, nome e @usuário, e um cadeado ao lado de Matheus Oliveira e de Rodrigo Lima, que têm o perfil privado.",
+      },
+      {
+        imagem: "viaja-privado",
+        titulo: "Perfil privado",
+        texto:
+          "Em um perfil fechado, as viagens só aparecem depois que o dono aprova o pedido: cada pessoa decide quem acompanha os seus passos.",
+        alt: "Perfil de Lucas Andrade na Avori, com o selo Perfil privado, 3 seguidores, 4 seguindo e o botão Solicitado; abaixo, um cadeado e o aviso Esta conta é privada, com a solicitação pendente até ele aprovar.",
+      },
+      {
+        imagem: "viaja-solicitacoes",
+        titulo: "Solicitações para seguir",
+        texto:
+          "Os pedidos para seguir chegam em um só lugar, e o viajante aprova ou recusa cada um com um toque.",
+        alt: "Tela Notificações da Avori com três solicitações para seguir, de Vinícius Teixeira, Amanda Freitas e Patrícia Azevedo, cada uma com foto, @usuário e os botões Aprovar e Recusar.",
+      },
+      {
+        imagem: "viaja-foto",
+        painel: true,
+        titulo: "Ajustar foto",
+        texto:
+          "Arraste e dê zoom para enquadrar a foto: o círculo mostra exatamente o que os outros vão ver no perfil.",
+        alt: "Janela Ajustar foto da Avori: a foto de um rosto ampliada, com um círculo marcando a parte que aparece no perfil, o controle de zoom um pouco acima do mínimo e os botões Cancelar e Aplicar.",
+      },
+      {
+        imagem: "viaja-perfil",
+        titulo: "Perfil e privacidade",
+        texto:
+          "Nome, @usuário, bio e a chave de privacidade na mesma tela: o viajante controla como aparece e quem pode segui-lo.",
+        alt: "Tela Perfil da Avori: cartão de Helena Prado com foto, @helenaprado, selo Privado e bio; abaixo, os campos Nome completo, Nome de usuário e Bio e, ao lado, o cartão Privacidade com a chave Perfil público desligada.",
+      },
+      {
+        imagem: "viaja-viagens",
+        titulo: "Viagens",
+        texto:
+          "Todas as viagens do grupo em um só lugar, das próximas às que já passaram, cada uma com as suas datas e o seu destino.",
+        alt: "Tela Viagens da Avori na aba Todas (5): cartões com foto, destino, datas, situação e orçamento de Lisboa com a turma, Chapada dos Veadeiros, Réveillon no Rio, Pirenópolis no feriado e Buenos Aires de inverno, além do cartão Nova viagem.",
+      },
+      {
+        imagem: "viaja-viagem",
+        titulo: "Página da viagem",
+        texto:
+          "Cada viagem reúne o roteiro dia a dia, os gastos e quem vai: o grupo inteiro planeja no mesmo lugar, sem planilha paralela.",
+        alt: "Página da viagem Lisboa com a turma na Avori: capa com o destino, as datas, o orçamento de R$ 24.000,00 e a foto de um mirante de Lisboa; abas Itinerário, Despesas, Lugares e Reservas; o Dia 1 com três atividades e, à direita, o resumo (11 atividades, 5 despesas, 6 dias) e os membros da viagem.",
+      },
+      {
+        imagem: "viaja-acerto",
+        titulo: "Acerto de contas",
+        texto:
+          "O app soma as despesas rateadas e mostra quem deve a quem, com o menor número de transferências para zerar a conta do grupo.",
+        alt: "Tela Acerto de contas da Avori: o saldo por membro, com a dona da viagem tendo R$ 16.104,00 a receber e três participantes devendo R$ 5.368,00 cada, e as três transferências sugeridas para zerar os saldos.",
+      },
+    ],
     repo: "https://github.com/Fernando-Oli/viaja-mais",
     demo: "roteiro",
   },

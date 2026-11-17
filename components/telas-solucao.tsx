@@ -20,6 +20,36 @@ import guia1440 from "@/content/capturas/cultiva-guia-1440.webp";
 import conceitos960 from "@/content/capturas/cultiva-conceitos-960.webp";
 import conceitos1280 from "@/content/capturas/cultiva-conceitos-1280.webp";
 import conceitos1440 from "@/content/capturas/cultiva-conceitos-1440.webp";
+import viajaRoteiro960 from "@/content/capturas/viaja-roteiro-960.webp";
+import viajaRoteiro1280 from "@/content/capturas/viaja-roteiro-1280.webp";
+import viajaRoteiro1440 from "@/content/capturas/viaja-roteiro-1440.webp";
+import viajaFeed960 from "@/content/capturas/viaja-feed-960.webp";
+import viajaFeed1280 from "@/content/capturas/viaja-feed-1280.webp";
+import viajaFeed1440 from "@/content/capturas/viaja-feed-1440.webp";
+import viajaBusca960 from "@/content/capturas/viaja-busca-960.webp";
+import viajaBusca1280 from "@/content/capturas/viaja-busca-1280.webp";
+import viajaBusca1440 from "@/content/capturas/viaja-busca-1440.webp";
+import viajaPrivado960 from "@/content/capturas/viaja-privado-960.webp";
+import viajaPrivado1280 from "@/content/capturas/viaja-privado-1280.webp";
+import viajaPrivado1440 from "@/content/capturas/viaja-privado-1440.webp";
+import viajaSolicitacoes960 from "@/content/capturas/viaja-solicitacoes-960.webp";
+import viajaSolicitacoes1280 from "@/content/capturas/viaja-solicitacoes-1280.webp";
+import viajaSolicitacoes1440 from "@/content/capturas/viaja-solicitacoes-1440.webp";
+import viajaFoto576 from "@/content/capturas/viaja-foto-576.webp";
+import viajaFoto864 from "@/content/capturas/viaja-foto-864.webp";
+import viajaFoto1152 from "@/content/capturas/viaja-foto-1152.webp";
+import viajaPerfil960 from "@/content/capturas/viaja-perfil-960.webp";
+import viajaPerfil1280 from "@/content/capturas/viaja-perfil-1280.webp";
+import viajaPerfil1440 from "@/content/capturas/viaja-perfil-1440.webp";
+import viajaViagens960 from "@/content/capturas/viaja-viagens-960.webp";
+import viajaViagens1280 from "@/content/capturas/viaja-viagens-1280.webp";
+import viajaViagens1440 from "@/content/capturas/viaja-viagens-1440.webp";
+import viajaViagem960 from "@/content/capturas/viaja-viagem-960.webp";
+import viajaViagem1280 from "@/content/capturas/viaja-viagem-1280.webp";
+import viajaViagem1440 from "@/content/capturas/viaja-viagem-1440.webp";
+import viajaAcerto960 from "@/content/capturas/viaja-acerto-960.webp";
+import viajaAcerto1280 from "@/content/capturas/viaja-acerto-1280.webp";
+import viajaAcerto1440 from "@/content/capturas/viaja-acerto-1440.webp";
 
 /** Capturas em três larguras, da menor para a maior: telas em 16:10; painéis no formato próprio, com cantos transparentes. */
 const versoes: Record<TelaImagem, StaticImageData[]> = {
@@ -29,6 +59,16 @@ const versoes: Record<TelaImagem, StaticImageData[]> = {
   "cultiva-clima": [clima960, clima1280, clima1440],
   "cultiva-guia": [guia960, guia1280, guia1440],
   "cultiva-conceitos": [conceitos960, conceitos1280, conceitos1440],
+  "viaja-roteiro": [viajaRoteiro960, viajaRoteiro1280, viajaRoteiro1440],
+  "viaja-feed": [viajaFeed960, viajaFeed1280, viajaFeed1440],
+  "viaja-busca": [viajaBusca960, viajaBusca1280, viajaBusca1440],
+  "viaja-privado": [viajaPrivado960, viajaPrivado1280, viajaPrivado1440],
+  "viaja-solicitacoes": [viajaSolicitacoes960, viajaSolicitacoes1280, viajaSolicitacoes1440],
+  "viaja-foto": [viajaFoto576, viajaFoto864, viajaFoto1152],
+  "viaja-perfil": [viajaPerfil960, viajaPerfil1280, viajaPerfil1440],
+  "viaja-viagens": [viajaViagens960, viajaViagens1280, viajaViagens1440],
+  "viaja-viagem": [viajaViagem960, viajaViagem1280, viajaViagem1440],
+  "viaja-acerto": [viajaAcerto960, viajaAcerto1280, viajaAcerto1440],
 };
 
 /**

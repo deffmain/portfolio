@@ -12,6 +12,9 @@ import viaja1440 from "@/content/capturas/viaja-mais-1440.webp";
 import pesquisa960 from "@/content/capturas/pesquisa-capa-960.webp";
 import pesquisa1280 from "@/content/capturas/pesquisa-capa-1280.webp";
 import pesquisa1440 from "@/content/capturas/pesquisa-capa-1440.webp";
+import park960 from "@/content/capturas/park-capa-960.webp";
+import park1280 from "@/content/capturas/park-capa-1280.webp";
+import park1440 from "@/content/capturas/park-capa-1440.webp";
 
 // Composições ilustrativas de cada solução, desenhadas em SVG com a paleta do
 // site. São esquemáticas de propósito (sem dados reais); as soluções que já têm
@@ -40,6 +43,11 @@ const capturas: Partial<Record<Visual, { versoes: StaticImageData[]; alt: string
   pesquisa: {
     versoes: [pesquisa960, pesquisa1280, pesquisa1440],
     alt: "Arte da pesquisa em fundo vinho: o título “Ganhos e perdas do desenvolvimento em código de máquina” e o subtítulo, ao lado de um bloco de código que, com a IA, vira um bloco de bits.",
+    soCard: true,
+  },
+  park: {
+    versoes: [park960, park1280, park1440],
+    alt: "Arte da Demo Park API em fundo preto: o título “API REST — Controle de Estacionamento” ao lado de um servidor ligado a vagas, carros e cancelas por setas com os métodos POST, GET, PUT e DELETE.",
     soCard: true,
   },
 };

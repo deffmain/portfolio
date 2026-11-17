@@ -391,9 +391,9 @@ export const solucoes: Solucao[] = [
 
 export const estudos: { nome: string; descricao: string; stack: string; url: string }[] = [
   { nome: "Login API com JWT", descricao: "Autenticação stateless", stack: "Spring Security · JWT", url: "https://github.com/deffmain/login-backend-spring" },
-  { nome: "ShopFast — Plano de Qualidade", descricao: "SQAP com quality gates", stack: "IEEE 730 · ISO 25010 · DORA", url: "https://github.com/deffmain/ShopFast-QualityAssurance" },
+  { nome: "Python Learning", descricao: "Fundamentos com exercícios práticos", stack: "Python · funções · listas", url: "https://github.com/deffmain/Python-Learning" },
   { nome: "Employee Management", descricao: "Persistência sem ORM", stack: "Java · JDBC · PostgreSQL", url: "https://github.com/deffmain/Employee-Management-System" },
-  { nome: "Software Engineering Lab", descricao: "Laboratório de system design", stack: "ADRs · requisitos · modelagem", url: "https://github.com/deffmain/software-engineering-lab" },
+  { nome: "Frontend Journey", descricao: "Caderno de estudos de frontend", stack: "JavaScript · HTML · CSS", url: "https://github.com/deffmain/Frontend-Journey" },
 ];
 
 // "Como eu construo" — o processo começa no negócio; `ia: true` põe o selo "IA no processo" na etapa.

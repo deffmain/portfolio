@@ -4,10 +4,10 @@
 
 ## Estrutura do site
 
-<!-- REVISAO[ADV-20261030-2152-04] baixa — README descreve a home antiga (índice com prévia que segue o cursor, morph "a partir do índice") e não lista content/capturas/ → .claude/revisoes/2026-10-30-2152-adversarial.md -->
-- **/** — hero, índice de soluções (prévia que segue o cursor), processo, sobre, contato
-- **/solucoes/[slug]** — estudo de caso, gerado estaticamente; o título faz *morph* a partir do índice com `<ViewTransition>`
-- **/solucoes/viaja-mais#experimente** — protótipo ao vivo do gerador de roteiros com IA
+- **/** — hero, soluções (anel 3D em tela larga, roda vertical no celular), estudos e exercícios, processo, sobre e contato
+- **/solucoes/[slug]** — estudo de caso, gerado estaticamente. Ao abrir, três folhas sobem e a página chega por último (transição "Camadas", com `<ViewTransition>`); projetos com telas mostram um carrossel no lugar da capa
+- **/solucoes/viaja-mais#experimente** — protótipo ao vivo do gerador de roteiros com IA (Avori)
+- **/artigos/** — o PDF do artigo da pesquisa, servido de `public/`
 - **⌘K / Ctrl+K** — índice de navegação; frases livres são interpretadas por IA (ou por um roteador local, sem chave)
 
 ## Rodando localmente
@@ -32,7 +32,13 @@ Sem chave, o gerador de roteiros mostra um exemplo pré-gerado e a paleta usa o 
 
 Tudo está em [`content/perfil.ts`](content/perfil.ts): perfil, soluções (com problema, solução, processo, resultado e números), estudos, processo e trajetória. Para exibir o LinkedIn, preencha `perfil.linkedin`.
 
-As ilustrações das soluções ficam em [`components/visuais.tsx`](components/visuais.tsx) — são esquemáticas e podem ser trocadas por capturas de tela reais. Uma captura vai em `content/capturas/` (16:10, WebP) e entra no mapa `capturas` do mesmo arquivo, com texto alternativo e legenda; hoje o Cultiva já usa a sua.
+As imagens ficam em `content/capturas/`, em WebP 16:10 com três larguras (960, 1280 e 1440), e são mapeadas em [`components/visuais.tsx`](components/visuais.tsx):
+
+- `capturas` — a imagem do card do anel e da roda (e da capa do estudo de caso, a menos que tenha `soCard: true`);
+- `capas` — uma imagem só para a capa do estudo de caso, quando ela é diferente do card;
+- `ilustracoes` — legenda e texto alternativo das ilustrações em SVG (hoje, só a da pesquisa).
+
+As telas do carrossel do estudo de caso ficam em `telas`, em `content/perfil.ts`, e os arquivos são mapeados em [`components/telas-solucao.tsx`](components/telas-solucao.tsx).
 
 ## Código
 
@@ -42,8 +48,10 @@ app/solucoes/[slug]/page.tsx estudo de caso
 app/api/roteiro              gerador de roteiros — streaming NDJSON, cada item validado com Zod
 app/api/comando              paleta: a IA escolhe uma ação de um catálogo fechado
 lib/ai/                      provedores (Groq → Gemini), parser SSE, JSON Lines + Zod, rate limit
-components/                  home, cabeçalho, contato, visuais, paleta, demo
+components/                  home, anel e roda de soluções, telas, cabeçalho, contato, visuais, paleta, demo
 content/perfil.ts            conteúdo
+content/capturas/            imagens das soluções e das telas (WebP)
+public/artigos/              PDF do artigo da pesquisa
 ```
 
 ## Deploy (Vercel)

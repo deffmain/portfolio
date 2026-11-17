@@ -200,10 +200,12 @@ qualquer sessão ou conta do Claude que trabalhar aqui. Complementa o
   Cada etapa leva o selo "IA no processo" ao lado do título (`ia: true` em `processo`, o mesmo selo da construção nos estudos de caso); ele rejeitou uma frase "Com IA ·" por etapa e tirou a linha de evidência (↳ …) de cada etapa.
   O Dashboard de Suporte nasceu dos chamados e da necessidade de acompanhar
   os KPIs do atendimento (exemplo real de hipótese validada).
-- **Cards com imagens reais:** as ilustrações estão sendo trocadas por
-  capturas reais, um projeto por vez.
-  - O Cultiva já foi trocado. A captura ocupa o card inteiro e é a mesma URL
-    no card e na capa, por causa do morph.
+- **Cards com imagens reais:** concluído em 17/11/2026. Os cinco cards usam
+  captura ou arte (`capturas` em `visuais.tsx`), e as ilustrações SVG do
+  Dashboard, do Cultiva, da Avori e da Demo Park API foram apagadas. Só a
+  capa da pesquisa ainda é SVG (`Pesquisa`).
+  - A captura ocupa o card inteiro. Sem `soCard`, é a mesma URL no card e
+    na capa do estudo de caso.
   - Ele deixa a imagem escolhida de cada projeto em
     `Imagens_dos_projetos/<Projeto>/`. Corte no centro para 16:10 e gere três
     larguras em WebP (sem ampliar) em `content/capturas/`. Exemplo:
@@ -348,10 +350,11 @@ qualquer sessão ou conta do Claude que trabalhar aqui. Complementa o
 ## Em andamento
 
 - **Revisões:** os relatórios e as tarefas ficam em `.claude/revisoes/`, fora
-  do git. A lista mais recente, `2026-10-30-2152-tarefas.md`, tem tarefas
-  P1/P3 sobre as capturas do Cultiva. Há marcações `REVISAO[...]` abertas em
-  `components/visuais.tsx` e `app/solucoes/[slug]/page.tsx`
-  (`git grep -n "REVISAO\["`).
+  do git. Da lista mais recente, `2026-10-30-2152-tarefas.md`, já foram
+  feitas T-01 e T-02 (WebP responsivo e `<img>` com `srcSet`), T-03 (SVGs
+  inalcançáveis apagados) e T-06 (README). Seguem abertas a T-04 (modo
+  decorativo, `alt=""`, no card do anel) e as marcações informativas em
+  `components/visuais.tsx` (`git grep -n "REVISAO\["`).
 - **Servidor de desenvolvimento:** se não houver nenhum rodando, suba com
   `node node_modules/next/dist/bin/next dev --port 3000` (pelo terminal do
   Claude, `npx next dev -p 3000` falha com "unknown option '-p'"). O

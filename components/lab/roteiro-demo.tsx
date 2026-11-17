@@ -1,274 +1,409 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { motion } from "motion/react";
-import { Clock, MapPin, Minus, Moon, Plus, Sun, Sunrise, Users } from "lucide-react";
-import { estilos, grupos, orcamentos, roteiroDefaults, roteiroInput, type RoteiroInput, type RoteiroItem } from "@/lib/demos/roteiro";
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { Loader2, RotateCcw, SendHorizontal } from "lucide-react";
+import { z } from "zod";
+import {
+  completarPedido,
+  diasDe,
+  perguntas,
+  roteiroInput,
+  type RoteiroDia,
+  type RoteiroInput,
+  type RoteiroItem,
+} from "@/lib/demos/roteiro";
 import { useDemoStream } from "@/lib/use-demo-stream";
 import { ROTEIRO_PENDENTE, on } from "@/lib/bus";
-import { Chips, Field, Notice, PipelineTrace, RunButton, Segmented, SkeletonLine, TextInput, itemMotion } from "./parts";
+import { Notice, PipelineTrace, SkeletonLine } from "./parts";
 
-const exemplos: { label: string; input: Partial<RoteiroInput> }[] = [
-  { label: "Fim de semana em Ouro Preto a dois", input: { destino: "Ouro Preto, MG", dias: 2, pessoas: 2, grupo: "casal", estilos: ["cultura", "gastronomia"] } },
-  { label: "Chapada dos Veadeiros com a galera", input: { destino: "Chapada dos Veadeiros, GO", dias: 4, pessoas: 6, grupo: "amigos", orcamento: "econômico", estilos: ["aventura", "natureza"] } },
-  { label: "Rio de Janeiro em família", input: { destino: "Rio de Janeiro, RJ", dias: 5, pessoas: 4, grupo: "família", orcamento: "confortável", estilos: ["natureza", "cultura"] } },
-];
+// Segue a tela "Nova viagem com a Avori" da Avori: conversa de seis perguntas
+// à esquerda e a prévia do roteiro à direita, com a identidade do portfólio.
+
+const entra = "animate-[chegada_0.45s_cubic-bezier(0.22,1,0.36,1)_both] motion-reduce:animate-none";
+
+/** Campos válidos de um pedido parcial (paleta); o resto é descartado. */
+function parcialValido(dados: unknown): Partial<RoteiroInput> {
+  const shape = roteiroInput.shape;
+  const saida: Record<string, unknown> = {};
+  if (dados && typeof dados === "object") {
+    for (const [k, v] of Object.entries(dados)) {
+      const r = (shape[k as keyof typeof shape] as z.ZodType | undefined)?.safeParse(v);
+      if (r?.success) saida[k] = r.data;
+    }
+  }
+  return saida as Partial<RoteiroInput>;
+}
 
 export function RoteiroDemo() {
-  const [form, setForm] = useState<RoteiroInput>(roteiroDefaults);
-  const [enviado, setEnviado] = useState<RoteiroInput>(roteiroDefaults);
-  const formRef = useRef(form);
+  // "Refazer" monta a simulação de novo: estado, stream e foco recomeçam juntos.
+  const [rodada, setRodada] = useState(0);
+  return <Simulacao key={rodada} refeita={rodada > 0} onRefazer={() => setRodada((r) => r + 1)} />;
+}
+
+function Simulacao({ refeita, onRefazer }: { refeita: boolean; onRefazer: () => void }) {
+  const [respostas, setRespostas] = useState<string[]>([]);
+  const [interesses, setInteresses] = useState<string[]>([]);
+  const [marcados, setMarcados] = useState<string[]>([]);
+  const [texto, setTexto] = useState("");
+  const [pedido, setPedido] = useState<RoteiroInput | null>(null);
   const demo = useDemoStream<RoteiroItem>("/api/roteiro");
   const { run } = demo;
 
-  useEffect(() => {
-    formRef.current = form;
-  }, [form]);
+  const conversaRef = useRef<HTMLDivElement>(null);
+  const perguntaRef = useRef<HTMLDivElement>(null);
+  // Para onde vai o foco depois da próxima renderização.
+  const foco = useRef<"rolar" | "fixo" | null>(refeita ? "rolar" : null);
+  const ids = useId();
+
+  const passo = respostas.length;
+  const atual = perguntas[passo];
+  const running = demo.status === "running";
+  const temPipeline = demo.steps.length > 0;
+
+  const gerar = useCallback(
+    (p: RoteiroInput) => {
+      setPedido(p);
+      run(p);
+    },
+    [run],
+  );
 
   useEffect(() => {
-    const rodar = (params: Partial<RoteiroInput>) => {
-      const next = { ...formRef.current, ...params };
-      setForm(next);
-      setEnviado(next);
-      run(next);
+    // Pedido da paleta: completa o que faltar, mostra a conversa respondida e gera.
+    // Sem parâmetros, a paleta só traz a pessoa até a conversa.
+    const rodar = (parcial: Partial<RoteiroInput>) => {
+      if (!Object.keys(parcial).length) {
+        setTimeout(() => perguntaRef.current?.focus({ preventScroll: true }), 50);
+        return;
+      }
+      const p = completarPedido(parcial);
+      setRespostas([p.destino, p.duracao, p.quem, p.ritmo, p.orcamento, p.interesses.join(", ")]);
+      setInteresses(p.interesses);
+      setMarcados([]);
+      setTexto("");
+      gerar(p);
     };
 
-    // Pedido feito pela paleta em outra página: chega via sessionStorage.
+    // Vindo de outra página, o pedido espera no sessionStorage.
     const timer = setTimeout(() => {
-      let pendente: string | null = null;
+      let pendente: unknown = null;
       try {
-        pendente = sessionStorage.getItem(ROTEIRO_PENDENTE);
+        const bruto = sessionStorage.getItem(ROTEIRO_PENDENTE);
         sessionStorage.removeItem(ROTEIRO_PENDENTE);
+        pendente = bruto ? JSON.parse(bruto) : null;
       } catch {}
-      if (!pendente) return;
-      const parsed = roteiroInput.partial().safeParse(JSON.parse(pendente));
-      rodar(parsed.success ? parsed.data : {});
+      if (pendente) rodar(parcialValido(pendente));
     }, 0);
 
     const off = on("portfolio:acao", (c) => {
-      if (c.acao === "demo_roteiro") rodar((c.parametros ?? {}) as Partial<RoteiroInput>);
+      if (c.acao === "demo_roteiro") rodar(parcialValido(c.parametros));
     });
     return () => {
       clearTimeout(timer);
       off();
     };
-  }, [run]);
+  }, [gerar]);
 
-  const go = (patch: Partial<RoteiroInput> = {}) => {
-    const next = { ...form, ...patch };
-    setForm(next);
-    setEnviado(next);
-    run(next);
-  };
+  useEffect(() => {
+    const conversa = conversaRef.current;
+    if (conversa) conversa.scrollTop = conversa.scrollHeight;
+    if (foco.current) {
+      perguntaRef.current?.focus({ preventScroll: foco.current === "fixo" });
+      foco.current = null;
+    }
+    // O painel do pipeline, ao aparecer, encolhe a conversa: rola de novo.
+  }, [passo, demo.status, temPipeline]);
 
-  const set = <K extends keyof RoteiroInput>(k: K, v: RoteiroInput[K]) => setForm((f) => ({ ...f, [k]: v }));
-  const running = demo.status === "running";
+  function avancar(exibida: string, viaTexto: boolean, lista?: string[]) {
+    const novas = [...respostas, exibida];
+    setRespostas(novas);
+    setTexto("");
+    setMarcados([]);
+    if (lista) setInteresses(lista);
+    // Quem respondeu pelo campo continua nele; o chip some, então o foco vai
+    // para a pergunta seguinte. Na última, o campo também some.
+    if (!viaTexto || novas.length === perguntas.length) foco.current = "fixo";
+    if (novas.length === perguntas.length) {
+      const [destino, duracao, quem, ritmo, orcamento] = novas;
+      gerar({ destino, duracao, dias: diasDe(duracao), quem, ritmo, orcamento, interesses: lista ?? interesses });
+    }
+  }
+
+  const minimo = atual?.id === "destino" ? 2 : 1;
+  const textoOk = texto.trim().length >= minimo;
+
+  function enviarTexto() {
+    if (!atual || !textoOk) return;
+    const v = texto.trim();
+    if (atual.multipla) {
+      const lista = [...new Set([...marcados, v])].slice(0, 6);
+      avancar(lista.join(", "), true, lista);
+    } else avancar(v, true);
+  }
+
+  const dias = demo.items.filter((i): i is RoteiroDia => i.t === "dia").sort((a, b) => a.dia - b.dia);
+  const erroModelo = demo.items.find((i) => i.t === "erro");
+  const total = pedido?.dias ?? (respostas[1] ? diasDe(respostas[1]) : 3);
+  const recebidos = new Set(dias.map((d) => d.dia));
+  const faltam = Array.from({ length: total }, (_, i) => i + 1).filter((n) => !recebidos.has(n));
+  const falhou = demo.status === "error" || !!erroModelo;
 
   return (
-    <div className="grid overflow-hidden rounded-2xl border border-line-strong bg-paper lg:grid-cols-[360px_1fr]">
-      <aside className="space-y-5 border-b border-line p-5 md:p-6 lg:border-r lg:border-b-0">
-        <Field label="Destino">
-          <TextInput value={form.destino} onChange={(v) => set("destino", v)} icon={<MapPin className="size-4" />} placeholder="Ex.: Bonito, MS" />
-        </Field>
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Dias">
-            <Segmented label="Dias" options={[1, 2, 3, 4, 5] as const} value={form.dias} onChange={(v) => set("dias", v)} />
-          </Field>
-          <Field label="Pessoas">
-            <div className="flex items-center justify-between rounded-full border border-line-strong px-1 py-0.5">
-              <button type="button" aria-label="Menos pessoas" onClick={() => set("pessoas", Math.max(1, form.pessoas - 1))} className="rounded-full p-1 text-ink-soft hover:bg-paper-2 hover:text-ink">
-                <Minus className="size-3.5" />
-              </button>
-              <span className="flex items-center gap-1.5 text-sm tabular-nums">
-                <Users className="size-3.5 text-muted" />
-                {form.pessoas}
-              </span>
-              <button type="button" aria-label="Mais pessoas" onClick={() => set("pessoas", Math.min(12, form.pessoas + 1))} className="rounded-full p-1 text-ink-soft hover:bg-paper-2 hover:text-ink">
-                <Plus className="size-3.5" />
-              </button>
-            </div>
-          </Field>
-        </div>
-        <Field label="Grupo">
-          <Chips options={grupos} value={form.grupo} onToggle={(v) => set("grupo", v)} />
-        </Field>
-        <Field label="Orçamento">
-          <Chips options={orcamentos} value={form.orcamento} onToggle={(v) => set("orcamento", v)} />
-        </Field>
-        <Field label="Estilo" hint={`${form.estilos.length}/3`}>
-          <Chips
-            options={estilos}
-            value={form.estilos}
-            onToggle={(v) =>
-              set(
-                "estilos",
-                form.estilos.includes(v) ? (form.estilos.length > 1 ? form.estilos.filter((x) => x !== v) : form.estilos) : [...form.estilos, v].slice(-3),
-              )
-            }
-          />
-        </Field>
-        <RunButton running={running} onClick={() => go()}>
-          Gerar roteiro
-        </RunButton>
-        <PipelineTrace steps={demo.steps} meta={demo.meta} />
-      </aside>
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,440px)_minmax(0,1fr)] lg:gap-8">
+      <section
+        aria-label="Conversa"
+        className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-line-strong bg-paper lg:sticky lg:top-24 lg:h-[640px] lg:self-start"
+      >
+        <header className="border-b border-line px-5 py-4">
+          <p className="font-mono text-[11px] tracking-wider text-ink-soft uppercase">{atual ? `Pergunta ${passo + 1} de ${perguntas.length}` : "Tudo respondido"}</p>
+          <div
+            role="progressbar"
+            aria-label="Perguntas respondidas"
+            aria-valuemin={0}
+            aria-valuemax={perguntas.length}
+            aria-valuenow={passo}
+            className="mt-3 flex gap-1"
+          >
+            {perguntas.map((p, i) => (
+              <span key={p.id} className={`h-1 flex-1 rounded-full transition-colors motion-reduce:transition-none ${i < passo ? "bg-ink" : "bg-line"}`} />
+            ))}
+          </div>
+        </header>
 
-      <div className="min-h-[520px] space-y-4 p-5 md:p-8 lg:max-h-[860px] lg:overflow-y-auto">
+        <div ref={conversaRef} className="flex max-h-[26rem] min-h-[18rem] flex-col overflow-y-auto px-5 py-5 lg:max-h-none lg:min-h-0 lg:flex-1">
+          <div role="log" aria-live="polite" aria-label="Perguntas e respostas" className="mt-auto flex flex-col gap-3">
+            {respostas.map((r, i) => (
+              <div key={perguntas[i].id} className="flex flex-col gap-3">
+                <BolhaPergunta>{perguntas[i].texto}</BolhaPergunta>
+                <BolhaResposta>{r}</BolhaResposta>
+              </div>
+            ))}
+
+            {atual ? (
+              <div
+                key={atual.id}
+                ref={perguntaRef}
+                tabIndex={-1}
+                role="group"
+                aria-labelledby={`${ids}-pergunta`}
+                className={`flex flex-col gap-3 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-rust/40 ${entra}`}
+              >
+                <BolhaPergunta atual id={`${ids}-pergunta`}>
+                  {atual.texto}
+                  {atual.ajuda && <span className="mt-1 block font-sans text-xs text-muted">{atual.ajuda}</span>}
+                </BolhaPergunta>
+                <div className="flex flex-wrap gap-2">
+                  {atual.opcoes.map((o) => {
+                    const marcado = marcados.includes(o);
+                    return (
+                      <button
+                        key={o}
+                        type="button"
+                        aria-pressed={atual.multipla ? marcado : undefined}
+                        onClick={() =>
+                          atual.multipla ? setMarcados((m) => (marcado ? m.filter((x) => x !== o) : [...m, o])) : avancar(o, false)
+                        }
+                        className={`min-h-11 rounded-full border px-4 text-sm transition-colors motion-reduce:transition-none ${
+                          marcado ? "border-ink bg-ink text-paper" : "border-line-strong text-ink-soft hover:border-ink hover:text-ink"
+                        }`}
+                      >
+                        {o}
+                      </button>
+                    );
+                  })}
+                  {atual.multipla && (
+                    <button
+                      type="button"
+                      disabled={!marcados.length}
+                      onClick={() => avancar(marcados.join(", "), false, marcados)}
+                      className="min-h-11 rounded-full bg-rust px-5 text-sm font-medium text-paper transition-colors enabled:hover:bg-ink disabled:cursor-not-allowed disabled:opacity-40 motion-reduce:transition-none"
+                    >
+                      Continuar
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div ref={perguntaRef} tabIndex={-1} className={`flex flex-col rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-rust/40 ${entra}`}>
+                <BolhaPergunta atual>
+                  {falhou ? (
+                    "Não consegui montar este roteiro. Veja o aviso na prévia e use Refazer para tentar de novo."
+                  ) : demo.status === "done" ? (
+                    "Pronto. Veja a prévia do roteiro."
+                  ) : (
+                    <span className="inline-flex items-center gap-2">
+                      <Loader2 aria-hidden className="size-4 shrink-0 animate-spin text-rust motion-reduce:animate-none" />
+                      Montando um roteiro para {respostas[0]}…
+                    </span>
+                  )}
+                </BolhaPergunta>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {atual ? (
+          <form
+            className="flex items-center gap-2 border-t border-line p-3"
+            onSubmit={(e) => {
+              e.preventDefault();
+              enviarTexto();
+            }}
+          >
+            <label htmlFor={`${ids}-texto`} className="sr-only">
+              Sua resposta para: {atual.texto}
+            </label>
+            <input
+              id={`${ids}-texto`}
+              value={texto}
+              maxLength={60}
+              autoComplete="off"
+              onChange={(e) => setTexto(e.target.value)}
+              placeholder="Ou escreva com suas palavras"
+              className="min-h-11 min-w-0 flex-1 rounded-full border border-line-strong bg-paper px-4 text-base text-ink outline-none transition-colors placeholder:text-muted focus:border-ink sm:text-sm"
+            />
+            <button
+              type="submit"
+              disabled={!textoOk}
+              aria-label="Enviar resposta"
+              className="flex size-11 shrink-0 items-center justify-center rounded-full bg-ink text-paper transition-colors enabled:hover:bg-rust disabled:opacity-40 motion-reduce:transition-none"
+            >
+              <SendHorizontal aria-hidden className="size-4" />
+            </button>
+          </form>
+        ) : (
+          temPipeline && (
+            <div className="border-t border-line p-3">
+              <PipelineTrace steps={demo.steps} meta={demo.meta} />
+            </div>
+          )
+        )}
+      </section>
+
+      <section aria-label="Prévia do roteiro" aria-busy={running} className="flex min-w-0 flex-col gap-3">
+        <div className="rounded-2xl bg-ink px-6 py-6 text-paper md:px-7">
+          <div className="flex items-start justify-between gap-4">
+            <p className="font-mono text-[10px] tracking-[0.16em] text-[#e0764f] uppercase">Prévia do roteiro</p>
+            {pedido && (
+              <p className="font-mono text-[11px] text-paper/60 tabular-nums">
+                {dias.length}/{total} {total === 1 ? "dia" : "dias"}
+              </p>
+            )}
+          </div>
+          <h3 className="mt-2 font-serif text-4xl leading-none [overflow-wrap:anywhere] md:text-5xl">{respostas[0] ?? "Seu destino"}</h3>
+          <p className="mt-2 text-sm text-paper/75 [overflow-wrap:anywhere]">
+            {[respostas[1], respostas[2]].filter(Boolean).join(" · ") || "Responda às perguntas da conversa"}
+          </p>
+        </div>
+
         {demo.aviso && <Notice tone="info">{demo.aviso}</Notice>}
         {demo.error && <Notice tone="error">{demo.error}</Notice>}
-        {demo.status === "idle" ? <Vazio onPick={go} /> : <Resultado items={demo.items} running={running} pedido={enviado} />}
-      </div>
-    </div>
-  );
-}
+        {erroModelo && <Notice tone="warn">{erroModelo.mensagem}</Notice>}
 
-function Vazio({ onPick }: { onPick: (p: Partial<RoteiroInput>) => void }) {
-  return (
-    <div className="flex h-full min-h-[460px] flex-col items-start justify-center">
-      <p className="max-w-md font-serif text-4xl leading-[1.05] italic">O roteiro aparece aqui, dia a dia, enquanto é gerado.</p>
-      <p className="mt-4 max-w-md text-sm text-ink-soft">Ajuste o formulário ou comece por um exemplo:</p>
-      <div className="mt-6 flex w-full max-w-md flex-col">
-        {exemplos.map((e) => (
-          <button key={e.label} onClick={() => onPick(e.input)} className="group flex items-center justify-between border-t border-line py-3 text-left text-sm last:border-b">
-            <span className="link-line">{e.label}</span>
-            <MapPin className="size-4 text-muted transition group-hover:text-rust" />
+        {!pedido
+          ? Array.from({ length: Math.min(total, 3) }, (_, i) => (
+              <Reserva key={i} dia={i + 1}>
+                Aparece quando você terminar as perguntas
+              </Reserva>
+            ))
+          : !erroModelo && (
+              <>
+                {dias.map((d) => (
+                  <CartaoDia key={d.dia} dia={d} />
+                ))}
+                {running &&
+                  faltam.map((n, i) =>
+                    i === 0 ? (
+                      <div key={n} className="space-y-3 rounded-2xl border border-line px-5 py-4">
+                        <div className="flex items-center gap-3">
+                          <SeloDia dia={n} apagado />
+                          <span className="text-sm text-muted">Montando…</span>
+                        </div>
+                        <SkeletonLine className="w-3/4 motion-reduce:animate-none" />
+                        <SkeletonLine className="w-1/2 motion-reduce:animate-none" />
+                      </div>
+                    ) : (
+                      <Reserva key={n} dia={n}>
+                        Montando…
+                      </Reserva>
+                    ),
+                  )}
+              </>
+            )}
+
+        <div className="mt-auto flex flex-wrap items-center gap-3 pt-2">
+          <p className="min-w-0 flex-1 basis-60 text-sm text-ink-soft">
+            Na Avori, este passo cria a viagem com o roteiro. Aqui é uma demonstração: nada é salvo.
+          </p>
+          <button
+            type="button"
+            onClick={onRefazer}
+            className="inline-flex min-h-11 items-center gap-2 rounded-full border border-line-strong px-5 text-sm text-ink transition-colors hover:border-ink motion-reduce:transition-none"
+          >
+            <RotateCcw aria-hidden className="size-4" />
+            Refazer
           </button>
-        ))}
-      </div>
+        </div>
+      </section>
     </div>
   );
 }
 
-const periodoIcon = { manhã: Sunrise, tarde: Sun, noite: Moon } as const;
-const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
-const tons = ["var(--ink)", "var(--rust)", "#8a8578", "#c9a27e", "#5d6b35", "#46443f"];
-
-function Resultado({ items, running, pedido }: { items: RoteiroItem[]; running: boolean; pedido: RoteiroInput }) {
-  const resumo = items.find((i) => i.t === "resumo");
-  const dias = items.filter((i) => i.t === "dia");
-  const orcamento = items.find((i) => i.t === "orcamento");
-  const dicas = items.filter((i) => i.t === "dica");
-  const erro = items.find((i) => i.t === "erro");
-
-  if (erro) return <Notice tone="warn">{erro.mensagem}</Notice>;
-
+function BolhaPergunta({ children, atual, id }: { children: ReactNode; atual?: boolean; id?: string }) {
   return (
-    <div className="space-y-4">
-      {resumo ? (
-        <motion.div {...itemMotion} className="border-b border-line pb-6">
-          <h3 className="font-serif text-4xl leading-tight md:text-5xl">{resumo.titulo}</h3>
-          <p className="mt-3 leading-relaxed text-ink-soft">{resumo.descricao}</p>
-          <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
-            <div>
-              <dt className="font-mono text-[10px] text-muted uppercase">Quando ir</dt>
-              <dd>{resumo.melhorEpoca}</dd>
-            </div>
-            <div>
-              <dt className="font-mono text-[10px] text-muted uppercase">Como chegar</dt>
-              <dd>{resumo.comoChegar}</dd>
-            </div>
-          </dl>
-        </motion.div>
-      ) : (
-        running && <CardSkeleton />
-      )}
-
-      {dias.map((d) => (
-        <motion.div key={d.dia} {...itemMotion} className="grid gap-4 border-b border-line py-5 md:grid-cols-[110px_1fr]">
-          <div>
-            <span className="font-mono text-xs text-rust">DIA {String(d.dia).padStart(2, "0")}</span>
-            <h4 className="mt-1 font-serif text-2xl leading-tight">{d.tema}</h4>
-          </div>
-          <ol className="space-y-4">
-            {d.atividades.map((a, i) => {
-              const Icon = periodoIcon[a.periodo as keyof typeof periodoIcon] ?? Sun;
-              return (
-                <li key={i} className="grid grid-cols-[1.25rem_1fr] gap-3">
-                  <Icon className="mt-0.5 size-4 text-muted" />
-                  <div>
-                    <p className="font-medium">
-                      {a.titulo} <span className="ml-1 font-mono text-[10px] font-normal text-muted uppercase">{a.periodo}</span>
-                    </p>
-                    <p className="mt-1 text-sm leading-relaxed text-ink-soft">{a.descricao}</p>
-                    <p className="mt-1.5 flex gap-3 font-mono text-[11px] text-muted">
-                      <span className={a.custo === "grátis" ? "text-rust" : ""}>{a.custo}</span>
-                      {a.duracao && (
-                        <span className="flex items-center gap-1">
-                          <Clock className="size-3" /> {a.duracao}
-                        </span>
-                      )}
-                    </p>
-                  </div>
-                </li>
-              );
-            })}
-          </ol>
-        </motion.div>
-      ))}
-      {running && dias.length < pedido.dias && <CardSkeleton />}
-
-      {orcamento && <Orcamento itens={orcamento.itens} observacao={orcamento.observacao} pessoas={pedido.pessoas} />}
-
-      {dicas.length > 0 && (
-        <motion.div {...itemMotion} className="pt-2">
-          <p className="mb-3 font-mono text-[11px] tracking-wider text-muted uppercase">Dicas</p>
-          <ul className="space-y-2.5">
-            {dicas.map((d, i) => (
-              <motion.li key={i} {...itemMotion} className="grid grid-cols-[1.25rem_1fr] gap-3 text-sm text-ink-soft">
-                <span className="text-rust">→</span>
-                {d.texto}
-              </motion.li>
-            ))}
-          </ul>
-        </motion.div>
-      )}
+    <div
+      id={id}
+      className={`max-w-[88%] self-start rounded-2xl rounded-bl-md border border-line bg-paper-2/70 px-4 py-2.5 font-serif leading-snug ${
+        atual ? "text-xl text-ink" : "text-lg text-ink-soft"
+      }`}
+    >
+      {children}
     </div>
   );
 }
 
-function Orcamento({ itens, observacao, pessoas }: { itens: { categoria: string; valor: number }[]; observacao: string; pessoas: number }) {
-  const total = itens.reduce((s, i) => s + i.valor, 0) || 1;
+function BolhaResposta({ children }: { children: ReactNode }) {
   return (
-    <motion.div {...itemMotion} className="border-b border-line py-5">
-      <div className="mb-4 flex items-baseline justify-between gap-4">
-        <p className="font-mono text-[11px] tracking-wider text-muted uppercase">Orçamento estimado do grupo</p>
-        <p className="text-right">
-          <span className="font-serif text-3xl tabular-nums">{brl.format(total)}</span>
-          {pessoas > 1 && <span className="block font-mono text-[11px] text-rust">{brl.format(total / pessoas)} por pessoa</span>}
-        </p>
-      </div>
-      <div className="flex h-2.5 gap-0.5 overflow-hidden rounded-full">
-        {itens.map((i, idx) => (
-          <motion.div
-            key={i.categoria}
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{ duration: 0.8, delay: idx * 0.08, ease: [0.22, 1, 0.36, 1] }}
-            style={{ width: `${(i.valor / total) * 100}%`, background: tons[idx % tons.length], transformOrigin: "left" }}
-            title={`${i.categoria}: ${brl.format(i.valor)}`}
-          />
-        ))}
-      </div>
-      <ul className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-        {itens.map((i, idx) => (
-          <li key={i.categoria} className="flex items-center gap-2">
-            <span className="size-2 rounded-full" style={{ background: tons[idx % tons.length] }} />
-            <span className="text-ink-soft">{i.categoria}</span>
-            <span className="ml-auto tabular-nums">{brl.format(i.valor)}</span>
+    <div className={`max-w-[88%] self-end rounded-2xl rounded-br-md bg-ink px-4 py-2.5 text-sm text-paper [overflow-wrap:anywhere] ${entra}`}>
+      {children}
+    </div>
+  );
+}
+
+function SeloDia({ dia, apagado }: { dia: number; apagado?: boolean }) {
+  return (
+    <span
+      className={`shrink-0 rounded-full px-2.5 py-1 font-mono text-[10px] tracking-wider uppercase ${apagado ? "bg-paper-2 text-muted" : "bg-ink text-paper"}`}
+    >
+      Dia {dia}
+    </span>
+  );
+}
+
+function Reserva({ dia, children }: { dia: number; children: ReactNode }) {
+  return (
+    <div className="flex items-center gap-3 rounded-2xl border border-dashed border-line-strong px-5 py-3.5">
+      <SeloDia dia={dia} apagado />
+      <span className="text-sm text-muted">{children}</span>
+    </div>
+  );
+}
+
+function CartaoDia({ dia }: { dia: RoteiroDia }) {
+  return (
+    <article className={`rounded-2xl border border-line-strong bg-paper px-5 py-4 ${entra}`}>
+      <header className="flex items-center gap-3">
+        <SeloDia dia={dia.dia} />
+        <h4 className="font-serif text-2xl leading-tight [overflow-wrap:anywhere]">{dia.tema}</h4>
+      </header>
+      <ol className="mt-3 space-y-1.5">
+        {dia.atividades.map((a, i) => (
+          <li key={i} className="grid grid-cols-[3.25rem_1fr] gap-3 text-sm leading-relaxed">
+            <span className="font-mono text-rust tabular-nums">{a.hora}</span>
+            <span className="text-ink [overflow-wrap:anywhere]">{a.titulo}</span>
           </li>
         ))}
-      </ul>
-      <p className="mt-4 text-xs leading-relaxed text-muted">{observacao} Valores estimados pela IA — confira antes de reservar.</p>
-    </motion.div>
-  );
-}
-
-function CardSkeleton() {
-  return (
-    <div className="space-y-3 border-b border-line py-5">
-      <SkeletonLine className="w-1/3" />
-      <SkeletonLine className="w-full" />
-      <SkeletonLine className="w-4/5" />
-    </div>
+      </ol>
+    </article>
   );
 }

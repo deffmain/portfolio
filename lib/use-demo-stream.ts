@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { DemoMeta, StepStatus } from "@/lib/ai/stream";
 
 export type Step = { id: string; label: string; status: StepStatus; detail?: string; at: number };
@@ -24,6 +24,10 @@ const initial = { status: "idle", steps: [], items: [], extra: null, aviso: null
 export function useDemoStream<Item, Extra = never>(url: string, extraType?: string) {
   const [state, setState] = useState<State<Item, Extra>>({ ...initial, steps: [], items: [] });
   const abortRef = useRef<AbortController | null>(null);
+
+  // Ao desmontar (sair da página, ou "Refazer", que remonta a demo), o pedido em
+  // andamento é cancelado: com provedor real, a geração pararia de gastar tokens.
+  useEffect(() => () => abortRef.current?.abort(), []);
 
   const run = useCallback(
     async (body: unknown) => {

@@ -1,7 +1,9 @@
-import { roteiroExemplo, roteiroInput, roteiroItem, roteiroPrompt, type RoteiroItem } from "@/lib/demos/roteiro";
+import { roteiroDemonstracao, roteiroInput, roteiroItem, roteiroPrompt, type RoteiroItem } from "@/lib/demos/roteiro";
 import { getProviders, openStream, shortModel } from "@/lib/ai/provider";
 import { eventStream, rateLimit, sleep, tooMany, validatedLines, type DemoEvent } from "@/lib/ai/stream";
 
+// 14 dias no formato enxuto (tema + 3 ou 4 linhas de hora e título) dão perto
+// de 2 mil tokens de saída; 4000 deixa folga para o raciocínio do modelo.
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
@@ -19,7 +21,16 @@ export async function POST(request: Request) {
     let itens = 0;
     let descartados = 0;
     let primeiroItemMs: number | undefined;
+    const vistos = new Set<number>();
     const emit = (item: RoteiroItem) => {
+      // Dia repetido ou além do pedido conta como descartado, não vira tela.
+      if (item.t === "dia") {
+        if (item.dia > input.dias || vistos.has(item.dia)) {
+          descartados++;
+          return;
+        }
+        vistos.add(item.dia);
+      }
       primeiroItemMs ??= Date.now() - started;
       itens++;
       out.send({ type: "item", data: item });
@@ -29,9 +40,13 @@ export async function POST(request: Request) {
 
     if (!getProviders().length) {
       out.send({ type: "step", id: "gerar", label: "Gerar roteiro", status: "run", detail: "modo offline" });
-      out.send({ type: "aviso", message: "Modo demonstração: nenhuma chave de IA configurada, exibindo um roteiro pré-gerado para Pirenópolis." });
-      for (const item of roteiroExemplo) {
-        await sleep(item.t === "dia" ? 520 : 260);
+      out.send({
+        type: "aviso",
+        message: `Modo demonstração: nenhuma chave de IA configurada. Este é um roteiro de exemplo, montado sem IA a partir das respostas, genérico para ${input.destino}.`,
+      });
+      for (const item of roteiroDemonstracao(input)) {
+        if (request.signal.aborted) break;
+        await sleep(480);
         emit(item);
       }
       out.send({ type: "step", id: "gerar", label: "Gerar roteiro", status: "ok", detail: "exemplo" });

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { perfil, processo, secoes, solucoes, trajetoria, stack } from "@/content/perfil";
-import { roteiroInput } from "@/lib/demos/roteiro";
+import { diasDe, roteiroInput } from "@/lib/demos/roteiro";
 
 // A paleta de comandos funciona como um agente de uma ferramenta só: a IA lê o
 // pedido em linguagem natural e escolhe UMA ação do catálogo, com parâmetros.
@@ -73,7 +73,7 @@ Responda SOMENTE com um objeto JSON:
 Ações:
 - "navegar": rolar até uma seção da página inicial. alvo ∈ ${secoes.map((s) => s.id).join(", ")}
 - "abrir_solucao": abrir o estudo de caso de uma solução. alvo ∈ ${solucoes.map((s) => s.slug).join(", ")}
-- "demo_roteiro": abrir o protótipo do gerador de roteiros do Viaja+. parametros opcionais: destino (texto), dias (1-5), pessoas (1-12), grupo (sozinho|casal|amigos|família), orcamento (econômico|moderado|confortável), estilos (lista com até 3 de: aventura, cultura, gastronomia, natureza, relax, vida noturna)
+- "demo_roteiro": abrir o protótipo do gerador de roteiros da Avori (as seis perguntas já respondidas). parametros opcionais, só os que o visitante disser: destino (texto curto), dias (1-14), duracao (rótulo curto, ex.: "Uma semana"), quem (Só eu|Em casal|Com amigos|Em família), ritmo (Tranquilo|Equilibrado|Intenso), orcamento (Econômico|Moderado|Confortável), interesses (lista com até 6 de: Comida, História, Natureza, Museus, Vida noturna, Compras)
 - "link": abrir contato. alvo ∈ github, email${perfil.linkedin ? ", linkedin" : ""}
 - "responder": só responder, quando a pergunta é sobre o Micael e nenhuma ação ajuda mais.
 
@@ -99,13 +99,16 @@ const norm = (s: string) =>
 export function comandoLocal(pergunta: string): Comando {
   const q = norm(pergunta);
 
-  if (/roteiro|viag|ferias|passeio|turismo/.test(q) && !/viaja\+|viaja mais/.test(q)) {
-    const destino = pergunta.match(/(?:para|pra|em|a)\s+([A-ZÀ-Ú][\p{L}\s.-]{2,40}?)(?=\s+(?:para|pra|por|com|em|no|na|durante|\d)\b|[,.?!]|$)/u)?.[1]?.trim();
-    const dias = Number(q.match(/(\d)\s*dias?/)?.[1]);
+  if (/roteiro|viag|ferias|passeio|turismo/.test(q) && !/avori|viaja\+|viaja mais/.test(q)) {
+    const destino = pergunta.match(/(?:para|pra|em|no|na|a)\s+([A-ZÀ-Ú][\p{L}\s.-]{2,40}?)(?=\s+(?:para|pra|por|com|em|no|na|durante|\d)\b|[,.?!]|$)/u)?.[1]?.trim();
     const parametros: Record<string, unknown> = {};
     if (destino) parametros.destino = destino;
-    if (dias >= 1 && dias <= 5) parametros.dias = dias;
-    return { acao: "demo_roteiro", parametros, resposta: "Abrindo o protótipo do gerador de roteiros do Viaja+." };
+    const dias = Number(q.match(/(\d{1,2})\s*dias?\b/)?.[1]);
+    if (dias >= 1 && dias <= 14) parametros.dias = dias;
+    else if (/fim de semana|duas semanas|uma semana/.test(q)) parametros.dias = diasDe(q);
+    const quem = /sozinh|so eu/.test(q) ? "Só eu" : /casal|namorad|espos|marido/.test(q) ? "Em casal" : /amig|galera|turma/.test(q) ? "Com amigos" : /famili|filh|crianc/.test(q) ? "Em família" : null;
+    if (quem) parametros.quem = quem;
+    return { acao: "demo_roteiro", parametros, resposta: "Abrindo o protótipo do gerador de roteiros da Avori." };
   }
 
   const solucao = solucoes.find((s) => q.includes(norm(s.nome)) || q.includes(s.slug.replace(/-/g, " ")));

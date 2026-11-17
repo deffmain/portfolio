@@ -1,7 +1,7 @@
 import { ViewTransition } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { Estudos, Hero, Processo, Sobre } from "@/components/home";
-import { HeliceSolucoes } from "@/components/helice";
+import { Solucoes } from "@/components/solucoes";
 import { Contato } from "@/components/contato";
 import { CommandPalette } from "@/components/command-palette";
 
@@ -18,7 +18,7 @@ export default function Home() {
         <div>
           <main>
             <Hero />
-            <HeliceSolucoes />
+            <Solucoes />
             <Estudos />
             <Processo />
             <Sobre />

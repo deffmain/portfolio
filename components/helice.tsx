@@ -320,7 +320,7 @@ function girarAteAlvo(s: Estado, dt: number, livre: boolean) {
 }
 
 /** Índice do projeto de onde o usuário está voltando, se houver. */
-function lerVolta(): number | null {
+export function lerVolta(): number | null {
   if (typeof window === "undefined") return null;
   try {
     const k = solucoes.findIndex((s) => s.slug === sessionStorage.getItem(VOLTA_PROJETO));
@@ -770,7 +770,6 @@ export function HeliceSolucoes() {
   return (
     <section
       ref={secao}
-      id="solucoes"
       aria-roledescription="carrossel"
       aria-label="Soluções"
       className="relative flex h-[max(32rem,100svh)] flex-col overflow-hidden text-paper"

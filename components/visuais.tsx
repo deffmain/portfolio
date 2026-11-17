@@ -30,8 +30,8 @@ const capturas: Partial<Record<Visual, { versoes: StaticImageData[]; alt: string
   },
   viaja: {
     versoes: [viaja960, viaja1280, viaja1440],
-    alt: "A marca Viaja+ com a frase “Para experiências inesquecíveis” ao lado de um celular com a tela inicial do aplicativo: criar uma viagem personalizada, atalhos de turismo, hospedagem e voos, e sugestões de destinos.",
-    legenda: "Arte de apresentação do Viaja+, com a tela inicial do aplicativo num celular.",
+    alt: "A marca avori com a frase “Para experiências inesquecíveis”, em fundo verde-escuro, ao lado de um celular com a página de uma viagem no aplicativo: Férias, em Brasília, com o selo Planejando e os botões Editor e Publicar.",
+    legenda: "Arte de apresentação da Avori, com a página de uma viagem num celular.",
   },
 };
 

@@ -212,7 +212,7 @@ async function Caso({ params }: Pick<PageProps<"/solucoes/[slug]">, "params">) {
                   </h2>
                 </div>
                 <p className="self-end text-ink-soft md:col-span-5 md:col-start-8">
-                  Protótipo da tela de roteiros planejada para o Viaja+. A resposta chega em streaming e cada item é validado antes de virar interface —
+                  Protótipo da tela de roteiros planejada para a Avori. A resposta chega em streaming e cada item é validado antes de virar interface —
                   se o modelo errar o formato, a tela não quebra.
                 </p>
               </div>

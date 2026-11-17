@@ -200,7 +200,7 @@ export const solucoes: Solucao[] = [
   },
   {
     slug: "viaja-mais",
-    nome: "Viaja+",
+    nome: "Avori",
     contexto: "Projeto Integrador · em equipe",
     ano: "2026",
     papel: "Dono do domínio Social & Descoberta e do módulo de roteiros com IA",
@@ -277,12 +277,12 @@ export const processo: { titulo: string; texto: string; evidencia: string }[] = 
   {
     titulo: "Entender o problema",
     texto: "Começo por quem sofre o problema. Requisitos e decisões ficam registrados antes de existir código.",
-    evidencia: "Catálogo de requisitos no Viaja+ · ADRs no Software Engineering Lab",
+    evidencia: "Catálogo de requisitos na Avori · ADRs no Software Engineering Lab",
   },
   {
     titulo: "Especificar",
     texto: "Spec, tarefas e critérios de aceite primeiro. A especificação vira o contrato que eu e a IA seguimos.",
-    evidencia: "Spec-driven no Dashboard de Suporte · planos por sprint no Viaja+",
+    evidencia: "Spec-driven no Dashboard de Suporte · planos por sprint na Avori",
   },
   {
     titulo: "Construir com agentes",
@@ -292,7 +292,7 @@ export const processo: { titulo: string; texto: string; evidencia: string }[] = 
   {
     titulo: "Provar que funciona",
     texto: "Peço para a IA atacar o próprio código: revisão adversarial, testes de mutação, RLS e E2E. Nada entra sem teste.",
-    evidencia: "82/82 testes de RLS e 25 mutações no Viaja+",
+    evidencia: "82/82 testes de RLS e 25 mutações na Avori",
   },
   {
     titulo: "Automatizar o repetitivo",
@@ -304,7 +304,7 @@ export const processo: { titulo: string; texto: string; evidencia: string }[] = 
 export const trajetoria: { periodo: string; titulo: string; lugar: string }[] = [
   { periodo: "Atual", titulo: "Suporte, implantação e desenvolvimento", lugar: "Sysok Sistemas" },
   { periodo: "Atual", titulo: "Criador", lugar: "Cultiva" },
-  { periodo: "2026", titulo: "Dev — Social & roteiros com IA", lugar: "Viaja+ · Projeto Integrador" },
+  { periodo: "2026", titulo: "Dev — Social & roteiros com IA", lugar: "Avori · Projeto Integrador" },
   { periodo: "Em curso", titulo: "Engenharia de Software · 7º período", lugar: "UniEVANGÉLICA" },
   { periodo: "Em curso", titulo: "Plano de 12 meses para AI Engineer", lugar: "Estudo independente" },
 ];

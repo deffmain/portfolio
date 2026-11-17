@@ -29,7 +29,7 @@ const itens: Item[] = [
       comando: { acao: "abrir_solucao", alvo: s.slug, resposta: "" },
     }),
   ),
-  { id: "demo-roteiro", grupo: "Experimente", label: "Gerador de roteiros (Viaja+)", hint: "protótipo ao vivo", icon: MapPin, keywords: "viagem ia demo roteiro", comando: { acao: "demo_roteiro", parametros: {}, resposta: "" } },
+  { id: "demo-roteiro", grupo: "Experimente", label: "Gerador de roteiros (Avori)", hint: "protótipo ao vivo", icon: MapPin, keywords: "viagem ia demo roteiro", comando: { acao: "demo_roteiro", parametros: {}, resposta: "" } },
   ...secoes.map((s): Item => ({ id: `sec-${s.id}`, grupo: "Página inicial", label: s.label, hint: s.descricao, icon: Hash, keywords: s.descricao, comando: { acao: "navegar", alvo: s.id, resposta: "" } })),
   { id: "link-email", grupo: "Contato", label: "Enviar e-mail", hint: perfil.email, icon: AtSign, keywords: "contato email falar", comando: { acao: "link", alvo: "email", resposta: "" } },
   { id: "link-github", grupo: "Contato", label: "GitHub", hint: `@${perfil.githubUser}`, icon: ArrowUpRight, keywords: "codigo repositorios", comando: { acao: "link", alvo: "github", resposta: "" } },

@@ -9,14 +9,18 @@ import dashboard1440 from "@/content/capturas/dashboard-suporte-1440.webp";
 import viaja960 from "@/content/capturas/viaja-mais-960.webp";
 import viaja1280 from "@/content/capturas/viaja-mais-1280.webp";
 import viaja1440 from "@/content/capturas/viaja-mais-1440.webp";
+import pesquisa960 from "@/content/capturas/pesquisa-capa-960.webp";
+import pesquisa1280 from "@/content/capturas/pesquisa-capa-1280.webp";
+import pesquisa1440 from "@/content/capturas/pesquisa-capa-1440.webp";
 
 // Composições ilustrativas de cada solução, desenhadas em SVG com a paleta do
 // site. São esquemáticas de propósito (sem dados reais); as soluções que já têm
 // uma captura de tela da aplicação (abaixo) usam a captura no lugar.
 
 /** Capturas reais (16:10), em três larguras, da menor para a maior. Aparecem no
- *  card do anel e na capa do estudo de caso. */
-const capturas: Partial<Record<Visual, { versoes: StaticImageData[]; alt: string; legenda: string }>> = {
+ *  card do anel e na capa do estudo de caso — menos as `soCard`, que ficam só
+ *  no card (a capa do estudo de caso continua com a ilustração). */
+const capturas: Partial<Record<Visual, { versoes: StaticImageData[]; alt: string; legenda?: string; soCard?: boolean }>> = {
   // REVISAO[ADV-20261030-2152-05] info — a captura mostra "Início 01/12/2026" e "Dia 160 · 01 de dez. de 2026" ao mesmo tempo → .claude/revisoes/2026-10-30-2152-adversarial.md
   cultiva: {
     versoes: [cultiva960, cultiva1280, cultiva1440],
@@ -32,6 +36,11 @@ const capturas: Partial<Record<Visual, { versoes: StaticImageData[]; alt: string
     versoes: [viaja960, viaja1280, viaja1440],
     alt: "A marca avori com a frase “Para experiências inesquecíveis”, em fundo verde-escuro, ao lado de um celular com a página de uma viagem no aplicativo: Férias, em Brasília, com o selo Planejando e os botões Editor e Publicar.",
     legenda: "Arte de apresentação da Avori, com a página de uma viagem num celular.",
+  },
+  pesquisa: {
+    versoes: [pesquisa960, pesquisa1280, pesquisa1440],
+    alt: "Arte da pesquisa em fundo vinho: o título “Ganhos e perdas do desenvolvimento em código de máquina” e o subtítulo, ao lado de um bloco de código que, com a IA, vira um bloco de bits.",
+    soCard: true,
   },
 };
 
@@ -53,7 +62,8 @@ const ilustracoes: Partial<Record<Visual, { alt: string; legenda: string }>> = {
 
 /** Legenda da capa: diz se a imagem é uma captura real ou uma ilustração. */
 export function legendaVisual(visual: Visual) {
-  return capturas[visual]?.legenda ?? ilustracoes[visual]?.legenda ?? "Ilustração esquemática da interface.";
+  const captura = capturas[visual];
+  return (captura && !captura.soCard ? captura.legenda : undefined) ?? ilustracoes[visual]?.legenda ?? "Ilustração esquemática da interface.";
 }
 
 const INK = "var(--ink)";
@@ -334,7 +344,8 @@ function Park() {
 
 export function VisualSolucao({ visual, className, destaque = false }: { visual: Visual; className?: string; destaque?: boolean }) {
   const captura = capturas[visual];
-  if (captura) {
+  // `destaque` = capa do estudo de caso: as capturas `soCard` não vão para lá.
+  if (captura && !(captura.soCard && destaque)) {
     // REVISAO[OTM-20261030-2152-04] info — as 10 fatias dividem 1 decodificação (3,3 MB + 4,4 MB na GPU, upload 3,5 ms uma vez, sem custo por quadro); arquivo só do anel pouparia ~6,8 MB mas tiraria a capa do cache no morph → .claude/revisoes/2026-10-30-2152-otimizacao.md
     // Sem otimização: o card e a capa pedem o mesmo arquivo, então no morph
     // capa-… a imagem da página nova já está baixada e decodificada.

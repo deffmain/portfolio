@@ -298,6 +298,41 @@ qualquer sessão ou conta do Claude que trabalhar aqui. Complementa o
     (os outros cards escondidos só no DOM), em 16:10, no fundo do próprio app;
   - as estrelas de todos os níveis estão no DOM: clique só nas que têm
     `tabindex="0"`.
+- **Pesquisa "Código de máquina com IA"** (17/11/2026): entrou no lugar dos
+  Manuais de implantação, na 2ª posição do anel e da roda
+  (`/solucoes/codigo-de-maquina-com-ia`; o slug antigo dá 404, escolha dele):
+  - é o artigo "Ganhos e perdas do desenvolvimento em código de máquina…",
+    **estudo inicial**: tem introdução, hipótese, delimitação e referencial
+    (5 eixos, 13 referências, 6 páginas), sem metodologia nem resultados.
+    Não escreva resultado que o artigo não tem. Ele pediu para tirar os
+    números do bloco "Estágio atual" (`numeros: []`; a página só mostra a
+    grade quando há números);
+  - **só o nome do Micael** no site e no PDF. O PDF original
+    (`Imagens_dos_projetos/Pesquisa_IA_Binario/`) tem mais dois nomes e não é
+    alterado. A cópia publicada, `public/artigos/codigo-de-maquina-com-ia.pdf`,
+    foi editada com PyMuPDF: redação real dos nomes e a página 1 subindo duas
+    linhas, com `/Author` = Micael. Não há o HTML de origem;
+  - campos opcionais em `Solucao`: `status` (selo "Em desenvolvimento ·
+    estudo inicial" só no topo do estudo de caso, em
+    `components/selo-status.tsx`; ele pediu para tirar a pílula do card do
+    anel e da roda), `blocos` (títulos de pesquisa nos quatro
+    blocos) e `artigo` (link "Ler o artigo (PDF)" no topo e no lugar do
+    botão do GitHub);
+  - o card do anel e da roda usa a arte dele
+    (`Imagens_dos_projetos/Pesquisa_IA_Binario/Gemini_Generated_Image_*.jfif`
+    → `content/capturas/pesquisa-capa-{960,1280,1440}.webp`), **só no card**
+    (`soCard: true` em `capturas`; a Demo Park API usa o mesmo esquema desde
+    17/11/2026: `Imagens_dos_projetos/Demo Park/Gemini_Generated_Image_*.jfif`
+    → `park-capa-*.webp` no card; a capa do estudo de caso dela é o diagrama
+    "Visão geral das camadas" do artefato de arquitetura dele, capturado só o
+    SVG, no tema claro e em 2×, com margem até 16:10 (`park-arquitetura-*.webp`,
+    no mapa `capas` de `visuais.tsx`, que vale só para a capa). A capa do
+    estudo de caso da pesquisa continua com o
+    diagrama SVG (`Pesquisa` em `visuais.tsx`): a mesma instrução em C,
+    assembly x86-64 e bytes (`01 D8`), com a IA indo "direto ao binário?";
+  - contexto "Pesquisa acadêmica · artigo" e papel "Autor" são provisórios:
+    ele não disse a instituição nem se a IA entrou no processo (por isso,
+    nenhum selo "IA no processo" ali).
 - **O que ele não gostou** (não proponha de novo):
   - a fita de tecnologias rolando no fim da seção Sobre e o item "Plano de
     12 meses para AI Engineer" na trajetória (removidos em 17/11/2026);

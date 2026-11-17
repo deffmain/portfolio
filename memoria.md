@@ -165,6 +165,30 @@ qualquer sessão ou conta do Claude que trabalhar aqui. Complementa o
   - O Cultiva fica em `C:\Cultiva` (`docker compose up -d --build`, com o
     Docker Desktop aberto). A conta de demonstração local é
     `portfolio-demo@example.com`.
+- **Telas no estudo de caso** (`components/trilho-telas.tsx` e
+  `components/telas-solucao.tsx`):
+  - no lugar da capa fica um carrossel lateral, com rolagem nativa e
+    scroll-snap. A capa não entra nele: o carrossel a substitui, e o 1º slide
+    carrega com prioridade, por estar acima da dobra. Projeto sem `telas`
+    mantém a capa sozinha;
+  - cada slide tem uma frase à esquerda (função e valor da tela) e a captura
+    à direita; no celular, a imagem vem em cima. Os dados ficam em `telas`,
+    em `content/perfil.ts`, e os arquivos em
+    `content/capturas/<projeto>-<tela>-<largura>.webp`;
+  - os recortes mostram só a funcionalidade. Se ela é um painel (inspetor,
+    simular solo), vai só o cartão, sem fundo em volta (`painel: true`,
+    imagem no formato próprio, centralizada na área 16:10 do slide); senão,
+    a tela em 16:10;
+  - a partir de md, as setas ficam nas laterais, no meio da altura. No
+    celular elas cobririam a frase, então vão para a barra de baixo, ao lado
+    dos tracinhos;
+  - **enquadramento ("auto ajuste"):** usa o mesmo `useEnquadrarAoChegar`
+    (`lib/hooks.ts`) do anel da home, com `centrar` (o carrossel fica
+    centrado na altura, sem ir para trás do cabeçalho, e o cabeçalho não
+    recolhe) e `armadoNaCarga` (vale desde a primeira roda, tecla ou toque,
+    porque o carrossel já aparece ao abrir a página). Ele rejeitou encolher o
+    carrossel para caber na tela: as imagens ficavam pequenas demais;
+  - o Cultiva tem 6 telas, e os outros projetos ainda não têm.
 - **O que ele não gostou** (não proponha de novo):
   - personagem animado desenhado à mão (o "monstrinho" / macaco);
   - o estilo Moebius/Sable aplicado ao site;

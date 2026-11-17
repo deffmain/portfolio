@@ -192,9 +192,14 @@ qualquer sessão ou conta do Claude que trabalhar aqui. Complementa o
   - para conferir, use velocidade normal: com
     `Animation.setPlaybackRate` reduzido os prints mostram o anel espalhado,
     o que não acontece de verdade (o DOM fica formado).
-- **Seção "IA no processo":** campo de tokens interativo
+- **Seção "Processo" ("Do problema à entrega.")**: campo de tokens interativo
   (`components/campo-tokens.tsx`). Perto de um passo, o campo se acalma e o
-  passo ganha destaque.
+  passo ganha destaque. Em 17/11/2026 o texto deixou de ser "IA no processo,
+  não no discurso.": o processo começa no negócio (entender o problema,
+  validar a hipótese) e a IA é ferramenta diária em quase todas as etapas.
+  Cada etapa leva o selo "IA no processo" ao lado do título (`ia: true` em `processo`, o mesmo selo da construção nos estudos de caso); ele rejeitou uma frase "Com IA ·" por etapa e tirou a linha de evidência (↳ …) de cada etapa.
+  O Dashboard de Suporte nasceu dos chamados e da necessidade de acompanhar
+  os KPIs do atendimento (exemplo real de hipótese validada).
 - **Cards com imagens reais:** as ilustrações estão sendo trocadas por
   capturas reais, um projeto por vez.
   - O Cultiva já foi trocado. A captura ocupa o card inteiro e é a mesma URL

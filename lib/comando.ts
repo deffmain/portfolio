@@ -121,7 +121,7 @@ export function comandoLocal(pergunta: string): Comando {
   if (/linkedin/.test(q) && perfil.linkedin) return { acao: "link", alvo: "linkedin", resposta: "Abrindo o LinkedIn do Micael." };
   if (/github|codigo|repositorio/.test(q)) return { acao: "link", alvo: "github", resposta: "Abrindo o GitHub do Micael." };
   if (/contato|email|e-mail|falar|contratar|vaga/.test(q)) return { acao: "navegar", alvo: "contato", resposta: "Levando você até o contato." };
-  if (/\bia\b|inteligencia|processo|metodo|como (ele )?(constroi|trabalha)|claude|agente/.test(q)) return { acao: "navegar", alvo: "processo", resposta: "Mostrando como o Micael constrói, com IA no processo." };
+  if (/\bia\b|inteligencia|processo|metodo|como (ele )?(constroi|trabalha)|claude|agente/.test(q)) return { acao: "navegar", alvo: "processo", resposta: "Mostrando como o Micael constrói, do problema à entrega." };
   if (/experien|trabalh|sysok|sobre|quem|stack|tecnolog/.test(q)) return { acao: "navegar", alvo: "sobre", resposta: "Mostrando a trajetória do Micael." };
   if (/projeto|solu|portfolio|trabalhos/.test(q)) return { acao: "navegar", alvo: "solucoes", resposta: "Mostrando o índice de soluções." };
 

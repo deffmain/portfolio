@@ -132,12 +132,13 @@ export function Processo() {
         <div className="self-start md:sticky md:top-28 md:col-span-5">
           <Label className="text-paper/50">Processo</Label>
           <h2 className="mt-6 font-serif text-[clamp(2.75rem,6vw,5.5rem)] leading-[0.9]">
-            <Lines lines={["IA no processo,", <em key="e" className="text-[#e0764f]">não no discurso.</em>]} />
+            <Lines lines={["Do problema", <em key="e" className="text-[#e0764f]">à entrega.</em>]} />
           </h2>
           <Reveal delay={0.2}>
             <p className="mt-8 max-w-md text-lg leading-relaxed text-paper/70">
-              A IA não é o produto — é como eu trabalho. Uso do jeito que um bom time usaria qualquer ferramenta de engenharia: com especificação,
-              regras claras, revisão e testes. O resultado aparece nas soluções: entregues mais rápido e mais fáceis de confiar.
+              Meu processo começa pelo negócio: entender quem tem o problema, validar a hipótese e só depois construir. A IA entra em quase todas
+              as etapas, todos os dias, para pesquisar, especificar, implementar, revisar e automatizar. Ela acelera e melhora o trabalho, e as
+              decisões continuam sendo minhas.
             </p>
           </Reveal>
         </div>
@@ -151,11 +152,16 @@ export function Processo() {
               >
                 <span className="font-mono text-xs text-[#e0764f]">{String(i + 1).padStart(2, "0")}</span>
                 <div>
-                  <h3 className="text-2xl tracking-tight transition-transform duration-300 group-data-[foco]/passo:translate-x-1.5 md:text-3xl">{p.titulo}</h3>
+                  <div className="flex flex-col items-start gap-x-4 gap-y-2 sm:flex-row sm:items-center sm:justify-between">
+                    <h3 className="text-2xl tracking-tight transition-transform duration-300 group-data-[foco]/passo:translate-x-1.5 md:text-3xl">{p.titulo}</h3>
+                    {/* Mesmo selo da construção nos estudos de caso, nas cores do palco escuro. */}
+                    {p.ia && (
+                      <span className="rounded-full bg-[#e0764f]/15 px-2.5 py-1 font-mono text-[10px] tracking-wide text-[#e0764f] uppercase">
+                        IA no processo
+                      </span>
+                    )}
+                  </div>
                   <p className="mt-3 leading-relaxed text-paper/70">{p.texto}</p>
-                  <p className="mt-5 font-mono text-[11px] leading-relaxed tracking-wide text-paper/45 uppercase transition-colors duration-300 group-data-[foco]/passo:text-paper/75">
-                    ↳ {p.evidencia}
-                  </p>
                 </div>
               </li>
             </Reveal>

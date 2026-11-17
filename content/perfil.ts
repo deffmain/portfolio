@@ -21,7 +21,7 @@ export type SecaoId = "inicio" | "solucoes" | "processo" | "sobre" | "contato";
 export const secoes: { id: SecaoId; label: string; descricao: string }[] = [
   { id: "inicio", label: "Início", descricao: "Topo da página" },
   { id: "solucoes", label: "Soluções", descricao: "Índice do que construí" },
-  { id: "processo", label: "Processo", descricao: "Como construo, com IA no processo" },
+  { id: "processo", label: "Processo", descricao: "Como construo, do problema à entrega" },
   { id: "sobre", label: "Sobre", descricao: "Trajetória e stack" },
   { id: "contato", label: "Contato", descricao: "E-mail e GitHub" },
 ];
@@ -361,32 +361,32 @@ export const estudos: { nome: string; descricao: string; stack: string; url: str
   { nome: "Software Engineering Lab", descricao: "Laboratório de system design", stack: "ADRs · requisitos · modelagem", url: "https://github.com/deffmain/software-engineering-lab" },
 ];
 
-// "Como eu construo" — a IA aparece aqui, como método.
-export const processo: { titulo: string; texto: string; evidencia: string }[] = [
+// "Como eu construo" — o processo começa no negócio; `ia: true` põe o selo "IA no processo" na etapa.
+export const processo: { titulo: string; texto: string; ia?: boolean }[] = [
   {
     titulo: "Entender o problema",
-    texto: "Começo por quem sofre o problema. Requisitos e decisões ficam registrados antes de existir código.",
-    evidencia: "Catálogo de requisitos na Avori · ADRs no Software Engineering Lab",
+    texto: "Começo por quem sofre o problema e pelo que precisa mudar. Antes de construir, valido a hipótese com o que já existe: o Dashboard de Suporte nasceu dos chamados e da necessidade de acompanhar os KPIs do atendimento.",
+    ia: true,
   },
   {
     titulo: "Especificar",
-    texto: "Spec, tarefas e critérios de aceite primeiro. A especificação vira o contrato que eu e a IA seguimos.",
-    evidencia: "Spec-driven no Dashboard de Suporte · planos por sprint na Avori",
+    texto: "Transformo o problema em spec, tarefas e critérios de aceite. Esse é o contrato do que vai ser entregue.",
+    ia: true,
   },
   {
     titulo: "Construir com agentes",
-    texto: "Uso Claude Code com as regras do projeto em AGENTS.md: convenções, limites e comandos de verificação. A IA implementa em passos pequenos; eu dirijo e reviso.",
-    evidencia: "AGENTS.md e CLAUDE.md nos projetos · PRs ligados a issues no Cultiva",
+    texto: "Implemento em passos pequenos, com as regras do projeto escritas em AGENTS.md: convenções, limites e como verificar.",
+    ia: true,
   },
   {
     titulo: "Provar que funciona",
-    texto: "Peço para a IA atacar o próprio código: revisão adversarial, testes de mutação, RLS e E2E. Nada entra sem teste.",
-    evidencia: "82/82 testes de RLS e 25 mutações na Avori",
+    texto: "Nada entra sem teste. RLS, E2E e testes de mutação mostram que a regra de negócio se mantém.",
+    ia: true,
   },
   {
     titulo: "Automatizar o repetitivo",
-    texto: "Quando uma tarefa se repete, ela vira uma skill de IA — e passa a sair igual toda vez.",
-    evidencia: "Skills sysok-docs, cultiva-emoji e procedimento-padrao-estudos",
+    texto: "O que se repete vira procedimento e passa a sair igual toda vez.",
+    ia: true,
   },
 ];
 

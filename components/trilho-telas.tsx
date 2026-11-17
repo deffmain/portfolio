@@ -43,7 +43,7 @@ export function TrilhoTelas({ titulos, rotulo, children }: { titulos: string[]; 
   const botao =
     "items-center justify-center rounded-full border border-line-strong bg-paper text-ink transition hover:border-ink hover:bg-ink hover:text-paper disabled:pointer-events-none disabled:opacity-0";
   const seta = `${botao} absolute top-1/2 z-10 hidden size-11 -translate-y-1/2 shadow-[0_6px_16px_-8px_rgb(20_20_19/0.4)] md:inline-flex`;
-  const setaCel = `${botao} inline-flex size-9 md:hidden`;
+  const setaCel = `${botao} inline-flex size-9 shrink-0 md:hidden`;
 
   return (
     <div ref={raiz} role="region" aria-roledescription="carrossel" aria-label={rotulo} className="overflow-hidden rounded-2xl border border-line bg-paper-2">
@@ -79,7 +79,9 @@ export function TrilhoTelas({ titulos, rotulo, children }: { titulos: string[]; 
         <button type="button" onClick={() => ir(atual - 1)} disabled={atual === 0} aria-label="Tela anterior" className={setaCel}>
           <ArrowLeft className="size-4" />
         </button>
-        <div className="flex items-center gap-1.5">
+        {/* A largura fica no botão e pode encolher: com muitas telas, no celular,
+            os indicadores cedem espaço e as setas ao lado mantêm o tamanho. */}
+        <div className="flex min-w-0 items-center gap-1.5">
           {titulos.map((t, i) => (
             <button
               key={t}
@@ -87,9 +89,9 @@ export function TrilhoTelas({ titulos, rotulo, children }: { titulos: string[]; 
               onClick={() => ir(i)}
               aria-label={`Ir para ${t}`}
               aria-current={i === atual ? "true" : undefined}
-              className="group flex h-6 items-center px-0.5"
+              className={`group flex h-6 min-w-0 shrink items-center px-0.5 transition-[width] duration-300 ${i === atual ? "w-8" : "w-4"}`}
             >
-              <span className={`block h-1 rounded-full transition-all duration-300 ${i === atual ? "w-7 bg-rust" : "w-3 bg-line-strong group-hover:bg-ink-soft"}`} />
+              <span className={`block h-1 w-full rounded-full transition-colors duration-300 ${i === atual ? "bg-rust" : "bg-line-strong group-hover:bg-ink-soft"}`} />
             </button>
           ))}
         </div>

@@ -127,9 +127,13 @@ function Captura({ tela, destaque = false }: { tela: Tela; destaque?: boolean })
       fetchPriority={destaque ? "high" : undefined}
       decoding="async"
       draggable={false}
+      // Painel no celular: largura definida (a da coluna ou a que dá o teto de altura), para a
+      // altura já estar reservada antes de a imagem carregar. Sem isso o carrossel cresce no
+      // meio da navegação quando o painel não está entre os primeiros slides.
+      style={tela.painel ? ({ "--larg-painel": `${Math.floor(ALTURA_PAINEL_CEL * (maior.width / maior.height))}px` } as React.CSSProperties) : undefined}
       className={
         tela.painel
-          ? `block h-auto max-h-[440px] w-auto max-w-full rounded-2xl ${sombra} md:absolute md:inset-0 md:m-auto md:h-full md:max-h-none`
+          ? `block h-auto max-h-[440px] w-[min(100%,var(--larg-painel))] max-w-full rounded-2xl ${sombra} md:absolute md:inset-0 md:m-auto md:h-full md:max-h-none md:w-auto`
           : "block aspect-[16/10] h-auto w-full"
       }
     />

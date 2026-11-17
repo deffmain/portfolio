@@ -102,7 +102,46 @@ qualquer sessão ou conta do Claude que trabalhar aqui. Complementa o
 - **Identidade:** "papel & tinta", com fundo creme, tinta escura e acento
   ferrugem `#b4441f` / `#e0764f`. Os títulos usam Instrument Serif, o texto
   usa Geist e os rótulos usam Geist Mono.
-- **Carrossel de soluções** (`components/helice.tsx`):
+- **Soluções no celular: roda vertical** (`components/solucoes-celular.tsx`),
+  escolhida em 16/11/2026 em `/lab/solucoes-celular` (variação "Roda"; rota
+  já apagada). O anel 3D travava no celular e a ideia da rolagem vertical foi
+  dele:
+  - abaixo de 640 px o anel não aparece. A seção tem a altura de uma tela e
+    rola com a página. O projeto da vez fica em destaque, com o anterior e o
+    próximo espiando acima e abaixo, na penumbra;
+  - **área de troca** (pedido dele): só o card da vez e uma margem de 10% em
+    volta (`[data-troca]`, com `touch-action: none`) tratam o dedo de outro
+    jeito: arrastar ali para cima ou para baixo troca o projeto, um a cada
+    56 px. No resto da seção o toque rola a página. A primeira versão prendia
+    o palco (`sticky`) e trocava pela rolagem; ele rejeitou porque a página
+    "travava" até passar pelo último projeto: não volte a prender a rolagem;
+  - para testar gestos no Chrome headless use `Input.dispatchTouchEvent`
+    (touchStart, touchMove, touchEnd): `Input.synthesizeScrollGesture` e
+    `synthesizeTapGesture` não rolam a página nem geram clique;
+  - sem 3D e sem animação por quadro em JavaScript: a troca é transição de
+    CSS em `transform` e `opacity`;
+  - `components/solucoes.tsx` escolhe entre os dois: o servidor manda o anel
+    e a roda, o CSS mostra um (`sm:`), e depois da hidratação só o que vale
+    para a tela continua montado. A âncora `#solucoes` fica nesse invólucro;
+  - voltando de um projeto, a página já aparece na seção, com ele em
+    destaque (`VOLTA_PROJETO`), e o cabeçalho do site recolhe sobre o palco,
+    como no anel;
+  - "reduzir movimento" vai em classe CSS (`motion-reduce:transition-none!`),
+    não em `useReducedMotion`: o servidor não sabe a preferência e o React
+    não corrige um `style` diferente na hidratação;
+  - ficaram de fora: listas roladas ("Lista", "Acende", "Pilha"), porque ele
+    quer um projeto por vez, e as variações "Troca" e "Encaixe".
+- **Carrossel de soluções** (`components/helice.tsx`), só em tela larga:
+  - **entrada em três etapas** (16/11/2026): os cards sobem do chão em pilha,
+    como sempre; a pilha se abre em fileira no mesmo plano; a fileira se
+    enrola até fechar o anel. Sem sorteio. Antes cada card ia em linha reta
+    de uma posição sorteada e eles se atravessavam em 3D em quase toda
+    entrada. Ele quis manter a subida: não troque por cards nascendo no
+    lugar;
+  - **luz dos cards sem variável CSS:** a opacidade do véu, da luz de cima e
+    do brilho vai direto em cada elemento, cada um com `will-change:
+    opacity`. Variável CSS no card é herdada: a cada mudança o navegador
+    recalculava o estilo de tudo dentro dele e repintava a face em 3×;
   - anel 3D de **cards planos** (a simulação de curva foi abandonada por
     desempenho), num **palco escuro "Terra" `#1f1915`**;
   - o título e as informações ficam dentro do palco;
@@ -207,7 +246,9 @@ qualquer sessão ou conta do Claude que trabalhar aqui. Complementa o
   `components/visuais.tsx` e `app/solucoes/[slug]/page.tsx`
   (`git grep -n "REVISAO\["`).
 - **Servidor de desenvolvimento:** se não houver nenhum rodando, suba com
-  `npx next dev -p 3000`. O `next build` **não** pode rodar na mesma pasta
+  `node node_modules/next/dist/bin/next dev --port 3000` (pelo terminal do
+  Claude, `npx next dev -p 3000` falha com "unknown option '-p'"). O
+  `next build` **não** pode rodar na mesma pasta
   com o dev ligado (veja a regra 6). Se `/solucoes/*` der "Jest worker
   encountered 2 child process exceptions", o worker de rotas do dev morreu
   (build em paralelo, ou o Claude Code encerrou o dev em segundo plano por

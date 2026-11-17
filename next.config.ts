@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
   /* config options here */
   cacheComponents: true,
   partialPrefetching: true,
+  experimental: {
+    agentUpgrade: "security",
+  },
   turbopack: {
     // Há um package-lock.json na pasta do usuário; fixa a raiz neste projeto.
     root: path.resolve("."),

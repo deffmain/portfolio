@@ -100,9 +100,9 @@ export const solucoes: Solucao[] = [
     processo: [
       { texto: "Spec-driven development: especificação, tarefas e guia de deploy e segurança escritos antes da primeira linha de código.", ia: true },
       { texto: "Implementação em fases a partir da spec, com um agente de IA executando tarefa por tarefa e eu revisando cada entrega.", ia: true },
-      { texto: "Zero dependências: Node 20 puro no servidor, HTML, CSS e JS no front, gráficos em SVG." },
-      { texto: "O token do GitHub nunca chega ao navegador; login via GitHub App e container Docker endurecido." },
-      { texto: "Testes automatizados com node:test e pipeline de CI." },
+      { texto: "Zero dependências: Node 20 puro no servidor, HTML, CSS e JS no front, gráficos em SVG.", ia: true },
+      { texto: "O token do GitHub nunca chega ao navegador; login via GitHub App e container Docker endurecido.", ia: true },
+      { texto: "Testes automatizados com node:test e pipeline de CI.", ia: true },
     ],
     resultado:
       "A equipe de suporte da Sysok ganhou uma visão única do volume de chamados, dos clientes que mais demandam e do tempo de resolução — e um mapa de onde o sistema gera mais dúvidas.",

@@ -15,6 +15,9 @@ import pesquisa1440 from "@/content/capturas/pesquisa-capa-1440.webp";
 import park960 from "@/content/capturas/park-capa-960.webp";
 import park1280 from "@/content/capturas/park-capa-1280.webp";
 import park1440 from "@/content/capturas/park-capa-1440.webp";
+import parkArq960 from "@/content/capturas/park-arquitetura-960.webp";
+import parkArq1280 from "@/content/capturas/park-arquitetura-1280.webp";
+import parkArq1440 from "@/content/capturas/park-arquitetura-1440.webp";
 
 // Composições ilustrativas de cada solução, desenhadas em SVG com a paleta do
 // site. São esquemáticas de propósito (sem dados reais); as soluções que já têm
@@ -52,6 +55,15 @@ const capturas: Partial<Record<Visual, { versoes: StaticImageData[]; alt: string
   },
 };
 
+/** Imagens só da capa do estudo de caso (16:10), quando ela é diferente do card. */
+const capas: Partial<Record<Visual, { versoes: StaticImageData[]; alt: string; legenda: string }>> = {
+  park: {
+    versoes: [parkArq960, parkArq1280, parkArq1440],
+    alt: "Diagrama das camadas da Demo Park API: a requisição do cliente HTTP passa por CorsFilter, JwtAuthorizationFilter e authorizeHttpRequests, chega a cinco controllers, que chamam sete services, que usam quatro repositórios JPA sobre MySQL; o JasperService acessa o MySQL direto via JDBC. Exceções vão para o ApiExceptionHandler, que devolve JSON de erro, e requisições sem token recebem 401 pelo EntryPoint.",
+    legenda: "Visão geral das camadas da API: segurança JWT, controllers, services, repositórios e banco.",
+  },
+};
+
 /**
  * Largura em que a captura aparece na capa do estudo de caso (a maior das duas):
  * no celular, a tela menos as margens (px-5 + px-4 + borda); a partir de md,
@@ -71,7 +83,12 @@ const ilustracoes: Partial<Record<Visual, { alt: string; legenda: string }>> = {
 /** Legenda da capa: diz se a imagem é uma captura real ou uma ilustração. */
 export function legendaVisual(visual: Visual) {
   const captura = capturas[visual];
-  return (captura && !captura.soCard ? captura.legenda : undefined) ?? ilustracoes[visual]?.legenda ?? "Ilustração esquemática da interface.";
+  return (
+    capas[visual]?.legenda ??
+    (captura && !captura.soCard ? captura.legenda : undefined) ??
+    ilustracoes[visual]?.legenda ??
+    "Ilustração esquemática da interface."
+  );
 }
 
 const INK = "var(--ink)";
@@ -351,9 +368,10 @@ function Park() {
 }
 
 export function VisualSolucao({ visual, className, destaque = false }: { visual: Visual; className?: string; destaque?: boolean }) {
-  const captura = capturas[visual];
-  // `destaque` = capa do estudo de caso: as capturas `soCard` não vão para lá.
-  if (captura && !(captura.soCard && destaque)) {
+  // `destaque` = capa do estudo de caso: usa a imagem própria da capa, se houver;
+  // as capturas `soCard` não vão para lá.
+  const captura = (destaque && capas[visual]) || capturas[visual];
+  if (captura && !("soCard" in captura && captura.soCard && destaque)) {
     // REVISAO[OTM-20261030-2152-04] info — as 10 fatias dividem 1 decodificação (3,3 MB + 4,4 MB na GPU, upload 3,5 ms uma vez, sem custo por quadro); arquivo só do anel pouparia ~6,8 MB mas tiraria a capa do cache no morph → .claude/revisoes/2026-10-30-2152-otimizacao.md
     // Sem otimização: o card e a capa pedem o mesmo arquivo, então no morph
     // capa-… a imagem da página nova já está baixada e decodificada.

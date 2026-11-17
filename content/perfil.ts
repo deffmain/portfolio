@@ -373,7 +373,7 @@ export const solucoes: Solucao[] = [
       { texto: "Autenticação com JWT e Spring Security, e autorização por perfil em cada endpoint (@PreAuthorize)." },
       { texto: "46 testes de integração cobrindo autenticação, usuários, clientes, vagas e estacionamentos." },
       { texto: "Erros padronizados num handler único — 422 para corpo inválido, conflitos de CPF, usuário e código de vaga — com mensagens em português, inglês e espanhol." },
-      { texto: "A base (camadas, exceções e testes de usuário) foi escrita por mim; a partir de agosto, autorização, clientes, vagas e a documentação OpenAPI foram construídas em par com o Claude Code, como registram os commits.", ia: true },
+      { texto: "A base (camadas, exceções e testes de usuário) foi escrita por mim; a partir de agosto, autorização, clientes, vagas e a documentação OpenAPI foram construídas em par com o Claude Code, como registram os commits." },
       { texto: "Documentação navegável com OpenAPI (Swagger UI) e relatório em PDF gerado com JasperReports." },
     ],
     resultado:

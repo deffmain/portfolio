@@ -315,45 +315,14 @@ export const solucoes: Solucao[] = [
       {
         imagem: "viaja-feed",
         titulo: "Feed",
-        texto:
-          "As viagens publicadas por quem você segue chegam com foto, datas e o roteiro aberto, para inspirar a próxima viagem do grupo.",
+        texto: "Compartilhe suas aventuras com seus amigos e receba inspiração de outras pessoas.",
         alt: "Feed da Avori: publicação de Marina Costa sobre Lisboa, com a foto de um bonde amarelo, o selo de 7 dias, as datas de 12 a 18 de junho e o botão Ver roteiro; ao lado, sugestões de pessoas para seguir e o atalho Pesquisar pessoas.",
-      },
-      {
-        imagem: "viaja-busca",
-        titulo: "Busca de pessoas",
-        texto:
-          "Encontre quem viaja com você pelo nome ou pelo @usuário; o cadeado já avisa quem mantém o perfil fechado.",
-        alt: "Tela Pesquisar da Avori com a busca por “ma”: cinco pessoas na lista, cada uma com foto, nome e @usuário, e um cadeado ao lado de Matheus Oliveira e de Rodrigo Lima, que têm o perfil privado.",
       },
       {
         imagem: "viaja-privado",
         titulo: "Perfil privado",
-        texto:
-          "Em um perfil fechado, as viagens só aparecem depois que o dono aprova o pedido: cada pessoa decide quem acompanha os seus passos.",
+        texto: "Controle sua privacidade e escolha os seus relacionamentos de acordo com o seu perfil.",
         alt: "Perfil de Lucas Andrade na Avori, com o selo Perfil privado, 3 seguidores, 4 seguindo e o botão Solicitado; abaixo, um cadeado e o aviso Esta conta é privada, com a solicitação pendente até ele aprovar.",
-      },
-      {
-        imagem: "viaja-solicitacoes",
-        titulo: "Solicitações para seguir",
-        texto:
-          "Os pedidos para seguir chegam em um só lugar, e o viajante aprova ou recusa cada um com um toque.",
-        alt: "Tela Notificações da Avori com três solicitações para seguir, de Vinícius Teixeira, Amanda Freitas e Patrícia Azevedo, cada uma com foto, @usuário e os botões Aprovar e Recusar.",
-      },
-      {
-        imagem: "viaja-foto",
-        painel: true,
-        titulo: "Ajustar foto",
-        texto:
-          "Arraste e dê zoom para enquadrar a foto: o círculo mostra exatamente o que os outros vão ver no perfil.",
-        alt: "Janela Ajustar foto da Avori: a foto de um rosto ampliada, com um círculo marcando a parte que aparece no perfil, o controle de zoom um pouco acima do mínimo e os botões Cancelar e Aplicar.",
-      },
-      {
-        imagem: "viaja-perfil",
-        titulo: "Perfil e privacidade",
-        texto:
-          "Nome, @usuário, bio e a chave de privacidade na mesma tela: o viajante controla como aparece e quem pode segui-lo.",
-        alt: "Tela Perfil da Avori: cartão de Helena Prado com foto, @helenaprado, selo Privado e bio; abaixo, os campos Nome completo, Nome de usuário e Bio e, ao lado, o cartão Privacidade com a chave Perfil público desligada.",
       },
       {
         imagem: "viaja-viagens",

@@ -289,11 +289,11 @@ export const solucoes: Solucao[] = [
       "Em seguida, o gerador de roteiros com IA, planejado para a sprint 11 — o protótipo abaixo já funciona.",
     ],
     processo: [
-      { texto: "Plano escrito antes de cada entrega da sprint, com requisitos rastreados até os testes em uma matriz de rastreabilidade." },
+      { texto: "Plano escrito antes de cada entrega da sprint, com requisitos rastreados até os testes em uma matriz de rastreabilidade.", ia: true },
       { texto: "Claude Code com regras do projeto (AGENTS.md e CLAUDE.md): convenções, dono de cada domínio e comandos de verificação.", ia: true },
       { texto: "Revisão adversarial com IA das minhas próprias mudanças, somada a testes de mutação para provar que os testes pegam bugs.", ia: true },
-      { texto: "Segurança provada em teste: políticas de RLS do Supabase testadas uma a uma, integração e E2E com Playwright." },
-      { texto: "Migrations propostas por mim e aprovadas pelo dono do banco, como em um time de verdade." },
+      { texto: "Segurança provada em teste: políticas de RLS do Supabase testadas uma a uma, integração e E2E com Playwright.", ia: true },
+      { texto: "Migrations propostas por mim e aprovadas pelo dono do banco, como em um time de verdade.", ia: true },
     ],
     resultado:
       "O domínio social entregue com a segurança verificada por teste: nenhuma política de acesso entra sem um teste que prove que ela bloqueia quem não deveria ver.",

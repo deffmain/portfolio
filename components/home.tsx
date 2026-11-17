@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { ArrowDown, ArrowUpRight, Check, Copy, Mail } from "lucide-react";
-import { estudos, perfil, processo, solucoes, stack, trajetoria } from "@/content/perfil";
+import { estudos, perfil, processo, solucoes, trajetoria } from "@/content/perfil";
 import { Label, Lines, Reveal } from "@/components/ui";
 import { GithubMarca, LinkedinMarca } from "@/components/marcas";
 import { CampoTokens } from "@/components/campo-tokens";
@@ -173,7 +173,6 @@ export function Processo() {
 }
 
 export function Sobre() {
-  const fita = [...stack, ...stack];
   return (
     <section id="sobre" className="adiar-render scroll-mt-16">
       <div className={`${wrap} grid gap-14 py-24 md:grid-cols-12 md:py-36`}>
@@ -202,16 +201,6 @@ export function Sobre() {
               ))}
             </ul>
           </Reveal>
-        </div>
-      </div>
-      <div className="overflow-hidden border-y border-line py-6" aria-label={`Stack: ${stack.join(", ")}`}>
-        <div className="flex w-max animate-marquee gap-10 font-serif text-4xl whitespace-nowrap italic md:text-6xl" aria-hidden>
-          {fita.map((s, i) => (
-            <span key={i} className="flex items-center gap-10">
-              {s}
-              <span className="size-2 rounded-full bg-rust not-italic" />
-            </span>
-          ))}
         </div>
       </div>
     </section>

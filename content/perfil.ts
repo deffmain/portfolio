@@ -12,7 +12,7 @@ export const perfil = {
     "Suporte de TI na Sysok e estudante de Engenharia de Software. Transformo problemas de operação — suporte, treinamento, planejamento — em ferramentas que as pessoas usam no dia a dia.",
   sobre: [
     "Na Sysok, meu cargo é de suporte de TI: atendo clientes e acompanho a implantação do ERP. Nesse dia a dia, desenvolvo soluções internas para os problemas que encontro. Estar perto de quem usa o sistema me ensinou a começar pelo problema e só depois escolher a tecnologia.",
-    "Minha base é Java e Spring Boot, com APIs, autenticação e bancos relacionais; no front, React e Next.js. Hoje uso IA como parte do processo de engenharia — para especificar, implementar, revisar e automatizar — e sigo um plano de estudos para me tornar AI Engineer.",
+    "Minha base é Java e Spring Boot, com APIs, autenticação e bancos relacionais; no front, React e Next.js. Hoje uso IA como parte do processo de engenharia, para especificar, implementar, revisar e automatizar.",
   ],
 };
 
@@ -424,7 +424,6 @@ export const trajetoria: { periodo: string; titulo: string; lugar: string }[] = 
   { periodo: "Atual", titulo: "Criador", lugar: "Cultiva" },
   { periodo: "2026", titulo: "Dev — Social & roteiros com IA", lugar: "Avori · Projeto Integrador" },
   { periodo: "Em curso", titulo: "Engenharia de Software · 7º período", lugar: "UniEVANGÉLICA" },
-  { periodo: "Em curso", titulo: "Plano de 12 meses para AI Engineer", lugar: "Estudo independente" },
 ];
 
 export const stack = ["Java", "Spring Boot", "Spring Security", "PostgreSQL", "Node.js", "TypeScript", "React", "Next.js", "Supabase", "Docker", "Python", "Claude Code"];

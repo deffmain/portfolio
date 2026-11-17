@@ -299,6 +299,8 @@ qualquer sessão ou conta do Claude que trabalhar aqui. Complementa o
   - as estrelas de todos os níveis estão no DOM: clique só nas que têm
     `tabindex="0"`.
 - **O que ele não gostou** (não proponha de novo):
+  - a fita de tecnologias rolando no fim da seção Sobre e o item "Plano de
+    12 meses para AI Engineer" na trajetória (removidos em 17/11/2026);
   - personagem animado desenhado à mão (o "monstrinho" / macaco);
   - o estilo Moebius/Sable aplicado ao site;
   - as primeiras ideias para "impressionar" o carrossel: nome gigante, brilho,

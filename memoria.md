@@ -221,6 +221,11 @@ qualquer sessão ou conta do Claude que trabalhar aqui. Complementa o
     à direita; no celular, a imagem vem em cima. Os dados ficam em `telas`,
     em `content/perfil.ts`, e os arquivos em
     `content/capturas/<projeto>-<tela>-<largura>.webp`;
+  - **a frase diz o que a tela agrega, na linguagem do usuário**, não o que
+    ela faz (pedido dele em 17/11/2026, na Avori). Em vez de "As viagens
+    publicadas por quem você segue chegam com foto, datas e roteiro…", use
+    "Compartilhe suas aventuras com seus amigos e receba inspiração de outras
+    pessoas." Curta e simples;
   - os recortes mostram só a funcionalidade. Se ela é um painel (inspetor,
     simular solo), vai só o cartão, sem fundo em volta (`painel: true`,
     imagem no formato próprio, centralizada na área 16:10 do slide); senão,
@@ -240,8 +245,14 @@ qualquer sessão ou conta do Claude que trabalhar aqui. Complementa o
   - o painel reserva a altura no celular antes de carregar (largura definida
     por `--larg-painel`): com o painel longe do 1º slide, a imagem `lazy`
     fazia o carrossel crescer no meio da navegação;
-  - o Cultiva tem 6 telas e a Avori tem 10 (o app inteiro, escolha dele em
-    16/11/2026); os outros projetos ainda não têm.
+  - o Cultiva tem 6 telas, a Avori tem 6 (eram 10; em 17/11/2026 ele tirou
+    Busca de pessoas, Solicitações para seguir, Ajustar foto e Perfil e
+    privacidade, cujas capturas continuam em `content/capturas/`) e o
+    Dashboard de Suporte tem 7 (17/11/2026); os outros
+    projetos ainda não têm;
+  - um painel mais largo que 16:10 é espremido no slide (`h-full w-auto`
+    dentro da área 16:10): capture-o numa janela mais estreita, em que o
+    card fique abaixo de 1,6, ou como tela 16:10.
 - **Simulação "Roteiros com IA, ao vivo"** (fim do estudo de caso da Avori,
   `components/lab/roteiro-demo.tsx`, 17/11/2026): segue o modelo da tela
   "Nova viagem com a Avori" que aparece nos prints, a pedido dele. Conversa de
@@ -268,6 +279,25 @@ qualquer sessão ou conta do Claude que trabalhar aqui. Complementa o
     andamento: não altere arquivos, não rode `npm run setup` (faz
     `db reset`) e suba o Supabase com `docker start` nos contêineres
     `supabase_*_viaja-mais` e o app em outra porta (`--port 3100`).
+- **Capturas do Dashboard de Suporte** (`dashboard-<tela>-<largura>.webp`,
+  17/11/2026; o card do anel continua `dashboard-suporte-*`):
+  - os dados reais são chamados de clientes da Sysok e nunca entram no
+    portfólio. Os prints usam dados fictícios: o servidor roda com um módulo
+    de pré-carga (`node --require mock.js server/server.js`, `PORT=3200`)
+    que dá variáveis falsas ao processo e troca o `fetch` para `github.com` e
+    `api.github.com` (login OAuth, membership 204, token de instalação e
+    ~200 issues inventadas no formato do `chamado.yml`), sem tocar em
+    `C:\suporte-dashboard`. O login é feito em Node (`/auth/github` →
+    `/auth/callback`) e o cookie `sd_session` vai para o Chrome;
+  - empresas, pessoas e atendentes (`@ana-suporte`…) são inventados; o nome
+    do repositório `SYSOK-Sistemas-Ltda/Suporte` aparece como está (escolha
+    dele);
+  - filtro de 90 dias. O céu do mapa tem proporção fixa (1000/620): na janela
+    de 1187 px ele sai 1097×680 e o corte 16:10 tira só ~5 px por lado. A
+    tabela é 1,88:1 em qualquer largura em que caiba: foi capturada sozinha
+    (os outros cards escondidos só no DOM), em 16:10, no fundo do próprio app;
+  - as estrelas de todos os níveis estão no DOM: clique só nas que têm
+    `tabindex="0"`.
 - **O que ele não gostou** (não proponha de novo):
   - personagem animado desenhado à mão (o "monstrinho" / macaco);
   - o estilo Moebius/Sable aplicado ao site;
